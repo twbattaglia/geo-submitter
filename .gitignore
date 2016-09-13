@@ -2,3 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
+
+*.dcf
+old/*
+test_data/*
+test.R

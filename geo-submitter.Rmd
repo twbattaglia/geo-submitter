@@ -1,0 +1,149 @@
+---
+title: "GEO-submitter"
+runtime: shiny
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    source_code: embed
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(shiny)
+library(shinyjs)
+source("helpers.R")
+```
+
+Data Upload
+=====================================  
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+
+```
+
+### Chart C
+
+```{r}
+
+```
+
+
+
+
+Experimental Information
+===================================== 
+
+Column {data-width=400}
+-------------------------------------
+   
+### Chart 2
+
+```{r}
+h4("Experimental Name")
+textInput(inputId = "name", 
+          label = "Provide an identifier for this entity. This identifier is used only as an internal reference within a given file. The identifier will not appear on final GEO records.", 
+          value = "", 
+          placeholder = "Enter text...")
+
+h4("Experimental Title")
+textInput(inputId = "title", 
+          label = "Provide a unique title that describes the overall study.", 
+          value = "", 
+          placeholder = "Enter text...")
+
+h4("Experimental Summary")
+textareaInput(inputId = "summary", 
+          label = "Summarize the goals and objectives of this study. 
+          The abstract from the associated publication may be suitable.", 
+          value = "", 
+          placeholder = "Enter text...")
+
+h4("Experimental Design")
+textareaInput(inputId = "design", 
+          label = "Provide a description of the experimental design. 
+          Indicate how many Samples are analyzed, if replicates are included, are there control and/or reference Samples", 
+          value = "", 
+          placeholder = "Enter text...")
+```   
+
+
+Column {data-width=600}
+-------------------------------------
+    
+### Chart 1
+    
+```{r}
+```
+   
+
+
+
+
+Author Information
+===================================== 
+
+Column {data-width=400}
+-------------------------------------
+   
+### Chart 3
+    
+```{r}
+
+```
+
+Column {data-width=600}
+-------------------------------------
+    
+### Chart 1
+    
+```{r}
+```
+
+
+
+
+Sample Information
+===================================== 
+
+Column {data-width=400}
+-------------------------------------
+   
+### Chart 2
+
+```{r}
+```   
+ 
+### Chart 3
+    
+```{r}
+```
+
+Column {data-width=600}
+-------------------------------------
+    
+### Chart 1
+    
+```{r}
+```
+
+
+
+
+Export
+=====================================
+

@@ -11,6 +11,9 @@ output:
 
 ```{r setup, include=FALSE}
 library(flexdashboard)
+library(highcharter)
+library(NanoStringNorm)
+library(ggplot2)
 library(shiny)
 library(shinyjs)
 source("helpers.R")
@@ -18,7 +21,7 @@ source("import_rcc.R")
 options(shiny.maxRequestSize = 9*1024^2)
 ```
 
-Data Upload 
+Upload 
 =====================================  
 
 Inputs {.sidebar}
@@ -26,7 +29,7 @@ Inputs {.sidebar}
 ```{r}
 h4('Introduction')
 ```
-GEO-submitter is an easy to use shiny tool, developed to make submitting gene expression study data easier. The tool will export a Simple Omnibus Format in Text (SOFT) file, which will include all relavent information for a Minimum Information About a Microarray Experiment (MIAME) compliant experiment.
+GEO-submitter is an easy to use shiny tool, developed to make submitting gene expression study data easier.
 
 ```{r}
 # Data Type
@@ -39,7 +42,7 @@ selectInput(inputId = 'data_type',
 tags$hr()
 
 # Input Files
-fileInput(inputId = 'file1', 
+fileInput(inputId = 'upload', 
           label = h4('Choose Files to Upload'),
           multiple = T,
           accept = c(
@@ -53,11 +56,10 @@ tags$hr()
 # Normalization method
 selectInput(inputId = "normalization", 
             label = h4('Normalization Method'), 
-            choices = c("NanoStringNorm-Sum",
-                        "NanoStringNorm-Mean", 
-                        "DESeq2"), 
-            selectize = T, 
-            selected = "NanoStringNorm-Sum")
+            choices = c("Housekeeping-Sum" = "housekeeping.sum",
+                        "Housekeeping-Mean" = "housekeeping.geo.mean", 
+                        "DESeq2" = "deseq2"), 
+            selectize = T)
 actionButton("norm", "More Info", width = "100px")
 tags$hr()
 
@@ -81,46 +83,92 @@ data <- reactive({
   if(is.null(input$upload)){
     return(NULL)
   }
+  data <- import_rcc2(input$upload$datapath)
+  showNotification("Files processed...", type = "message")
+  return(list(genes = data$x, metadata = data$header))
   
-  # Import Nanostring data
-  if(input$data_type == "Nanostring"){
-    data <- import_rcc2(input$upload$datapath)
-    return(list(genes = data$x, metadata = data$header))
-  }
 })
 ```
 
 Application author: [Thomas W. Battaglia](https://github.com/twbattaglia)
 
 
-
-Column {data-width=650} 
+Column
 -----------------------------------------------------------------------
 
-### Chart A 
+### Raw Expression Values
 
 ```{r}
+output$unnormalized <- renderHighchart({
 
+  # Err if NULL
+  if(is.null(data())){
+    return(NULL)
+  }
+  
+  # Convert to long format for high charts
+  showNotification("Generating Plots...", type = "message")
+  long_format <- subset(data()$genes, select = c(-1,-3)) %>%
+  reshape2::melt(id.vars = c("Name")) 
+  
+  # Plot boxplot over gene abundance values
+  highchart() %>% 
+    hc_add_series_boxplot(x = log(long_format$value), 
+                          by = long_format$variable,
+                          color = "#2980b9")  %>%
+    hc_title(text = "Raw Expression Values") %>%
+    hc_legend(enabled = FALSE) %>%
+    hc_xAxis(categories = long_format$variable) %>%
+    hc_yAxis(title = list(text = "Log10 gene abundances"))
+})
+highchartOutput("unnormalized")
 ```
 
-Column {data-width=350}
------------------------------------------------------------------------
-
-### Chart B
+### Normalized Expression Values
 
 ```{r}
-
+output$normalized <- renderHighchart({
+  # Err if NULL
+  if(is.null(input$upload)){
+    return(NULL)
+  }
+  
+  # Convert to long format for high charts
+  showNotification("Generating Plots...", type = "message")
+  
+  nsn <- NanoStringNorm::NanoStringNorm(
+    x = data()$genes,
+    anno = NA,
+    CodeCount = 'sum',
+    Background = 'mean',
+    SampleContent = input$normalization,
+    round.values = FALSE,
+    take.log = FALSE,
+    return.matrix.of.endogenous.probes = TRUE
+    )
+  
+  long_format <- reshape2::melt(nsn, id.vars = c("Name")) 
+  
+  # Plot boxplot over gene abundance values
+  highchart() %>% 
+    hc_add_series_boxplot(x = log(long_format$value), 
+                          by = long_format$Var2,
+                          color = "#2980b9")  %>%
+    hc_title(text = "Normalized Expression Values") %>%
+    hc_legend(enabled = FALSE) %>%
+    hc_xAxis(categories = long_format$Var2) %>%
+    hc_yAxis(title = list(text = "Log10 gene abundances"))
+})
+highchartOutput("normalized")
 ```
 
-### Chart C
-
+Column 
+-------------------------------------
+    
+### Chart 1
+    
 ```{r}
-
 ```
-
-
-
-
 
 Experimental setup
 ===================================== 
@@ -315,6 +363,7 @@ Column {data-width=600}
 
 Export
 =====================================
+The tool will export a Simple Omnibus Format in Text (SOFT) file, which will include all relavent information for a Minimum Information About a Microarray Experiment (MIAME) compliant experiment.
 ```{r}
 exp_values <- reactiveValues()
 exp_values$df <- data.frame(SERIES = "",

@@ -13,15 +13,87 @@ library(flexdashboard)
 library(shiny)
 library(shinyjs)
 source("helpers.R")
+source("import_rcc.R")
+options(shiny.maxRequestSize = 9*1024^2)
 ```
 
-Data Upload
+Data Upload 
 =====================================  
 
-Column {data-width=650}
+Inputs {.sidebar}
+-----------------------------------------------------------------------
+GEO-submitter is an easy to use shiny tool, developed to make submitting gene expression study data easier. The tool will export a Simple Omnibus Format in Text (SOFT) file, which will include all relavent information for a Minimum Information About a Microarray Experiment (MIAME) compliant experiment.
+
+```{r}
+# Data Type
+tags$hr()
+selectInput(inputId = 'data_type', 
+            label = h4('Select Data Type'), 
+            choices = c('Nanostring', "Microarray"), 
+            selected = "Nanostring", 
+            selectize = T)
+tags$hr()
+
+# Input Files
+fileInput(inputId = 'file1', 
+          label = h4('Choose Files to Upload'),
+          multiple = T,
+          accept = c(
+            '.RCC',
+            '.rcc',
+            '.rcc.gz'
+            )
+      )
+tags$hr()
+
+# Normalization method
+selectInput(inputId = "normalization", 
+            label = h4('Normalization Method'), 
+            choices = c("NanoStringNorm-Sum",
+                        "NanoStringNorm-Mean", 
+                        "DESeq2"), 
+            selectize = T, 
+            selected = "NanoStringNorm-Sum")
+actionButton("norm", "More Info", width = "100px")
+tags$hr()
+
+# Norm modal for more info
+observeEvent(input$norm, {
+  showModal(
+    modalDialog(
+      title = "Normalization Methods",
+      size = "m",
+      "Below are a breakdown of the different methods used for normalizing Nanostring data.",
+      easyClose = TRUE
+    ))
+})
+```
+
+```{r}
+# Reactive values to store imported data
+data <- reactive({
+  
+  # Err if NULL
+  if(is.null(input$upload)){
+    return(NULL)
+  }
+  
+  # Import Nanostring data
+  if(input$data_type == "Nanostring"){
+    data <- import_rcc2(input$upload$datapath)
+    return(list(genes = data$x, metadata = data$header))
+  }
+})
+```
+
+Application author: [Thomas W. Battaglia](https://github.com/twbattaglia)
+
+
+
+Column {data-width=650} 
 -----------------------------------------------------------------------
 
-### Chart A
+### Chart A 
 
 ```{r}
 
@@ -45,73 +117,156 @@ Column {data-width=350}
 
 
 
-Experimental Information
+Experimental Information 
 ===================================== 
 
-Column {data-width=400}
--------------------------------------
-   
-### Chart 2
-
+Inputs {.sidebar}
+-----------------------------------------------------------------------
+This will contain sidebar information
 ```{r}
-h4("Experimental Name")
+
+```
+
+
+
+
+Column {data-width=600}
+-------------------------------------
+    
+### Protocols
+    
+```{r}
+h4("Name")
 textInput(inputId = "name", 
           label = "Provide an identifier for this entity. This identifier is used only as an internal reference within a given file. The identifier will not appear on final GEO records.", 
+          width = "300px",
           value = "", 
           placeholder = "Enter text...")
 
-h4("Experimental Title")
+h4("Title")
 textInput(inputId = "title", 
-          label = "Provide a unique title that describes the overall study.", 
+          label = "Provide a unique title that describes the overall study. Max 255 characters.", 
           value = "", 
+          width = "300px",
           placeholder = "Enter text...")
 
-h4("Experimental Summary")
+h4("Summary")
 textareaInput(inputId = "summary", 
           label = "Summarize the goals and objectives of this study. 
           The abstract from the associated publication may be suitable.", 
           value = "", 
           placeholder = "Enter text...")
 
-h4("Experimental Design")
+h4("Design")
 textareaInput(inputId = "design", 
-          label = "Provide a description of the experimental design. 
-          Indicate how many Samples are analyzed, if replicates are included, are there control and/or reference Samples", 
+          label = "Provide a description of the experimental design. Indicate how many Samples are analyzed, if replicates are included, are there control and/or reference Samples", 
           value = "", 
           placeholder = "Enter text...")
-```   
 
+h4("Extraction Protocol")
+textareaInput(inputId = "extraction", 
+          label = "How samples were extracted", 
+          value = "", 
+          placeholder = "Enter text...")
 
-Column {data-width=600}
--------------------------------------
-    
-### Chart 1
-    
-```{r}
 ```
-   
 
+Column {data-width=400}
+-------------------------------------
+   
+### Metadata
+
+```{r}
+h4("Experimental Organism")
+textInput(inputId = "organism", 
+          label = "Identify the organism(s) from which the biological material was derived. See http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/", 
+          value = "",
+          placeholder = "Mus musculus")
+
+h4("Experimental Molecule")
+selectInput(inputId = 'molecule', 
+            label = 'Specify the type of molecule that was extracted from the biological material.', 
+            choices = c("total RNA", "polyA RNA", "cytoplasmic RNA", "nuclear RNA", "genomic DNA", "protein", "other"), 
+            selectize=TRUE)
+
+h4("Experimental Source")
+textInput(inputId = "source_type", 
+          label = "Enter sample source type.", 
+          value = "", 
+          placeholder = "Terminal Ileum")
+
+h4("Experiment Platform")
+textInput(inputId = "platform", 
+          label = "Enter specific platform identifier used for the analysis. See http://www.ncbi.nlm.nih.gov/geo/browse/?view=platforms&tool=findplatform to find the corresponding identifier.", 
+          value = "", 
+          placeholder = "GPL19964")
+
+h4("Experiment Identifier (Optional)")
+textInput(inputId = "pubmed", 
+          label = "Optionally, specify a valid PubMed identifier (PMID) that references a published article describing this study. Most commonly, this information is not available at the time of submission - it can be added later once the data are published.", 
+          value = "", 
+          placeholder = "12345678")
+
+actionButton(inputId = "expSave", label = "Save", width = '300px')
+```   
+   
 
 
 
 Author Information
 ===================================== 
 
-Column {data-width=400}
+Inputs {.sidebar}
+-----------------------------------------------------------------------
+This will contain sidebar information
+
+
+Column {data-width=350}
 -------------------------------------
    
-### Chart 3
-    
+### Add Authors
+
 ```{r}
+textInput(inputId = "firstName", 
+          label = h5("First Name"), 
+          value = "", 
+          placeholder = "John")
 
-```
+textInput(inputId = "middleName", 
+          label = h5("Middle Initial (Optional)"), 
+          value = "", 
+          placeholder = "W")
 
-Column {data-width=600}
+textInput(inputId = "lastName", 
+          label = h5("Last Name"), 
+          value = "", 
+          placeholder = "Doe")
+
+actionButton(inputId = "goButton", label = "Add Author",  width = "300px")
+```   
+
+
+Column {data-width=650}
 -------------------------------------
     
-### Chart 1
-    
+### Author Table
 ```{r}
+values <- reactiveValues()
+values$df <- data.frame(FirstName = "",
+                        Middle = "",
+                        LastName = "")
+output$table <- renderTable({values$df}, include.rownames = F)
+
+observeEvent(input$goButton, {
+  req(input$firstName)
+  req(input$lastName)
+  if(length(input$middleName) > 1){
+    
+  }
+  newLine <- isolate(c(input$firstName, input$middleName, input$lastName))
+  isolate(values$df <- rbind(as.matrix(values$df), unlist(newLine)))
+})
+tableOutput("table")
 ```
 
 
@@ -146,4 +301,31 @@ Column {data-width=600}
 
 Export
 =====================================
+```{r}
+# Run function for generating SOFT file 
 
+```
+
+
+
+
+<style>
+#sidebar.section.sidebar {
+  background-color: white; 
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+
+.js-irs-0 .irs-bar {
+border-top-color: #d01010;
+border-bottom-color: #d01010;
+} 
+
+.js-irs-0 .irs-bar-edge {
+border-color: #d01010;
+}
+
+.js-irs-0 .irs-single, .js-irs-0 .irs-bar-edge, .js-irs-0 .irs-bar {
+background: #a00;
+}
+
+</style>

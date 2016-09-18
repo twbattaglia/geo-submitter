@@ -16,22 +16,22 @@ library(NanoStringNorm)
 library(ggplot2)
 library(shiny)
 library(shinyjs)
-source("helpers.R")
-source("import_rcc.R")
-options(shiny.maxRequestSize = 9*1024^2)
+source("util/helpers.R")
+source("util/import_rcc.R")
+options(shiny.maxRequestSize = 9*1024^2) # 9mb limit
 ```
 
-Upload 
+Upload {data-orientation=rows}
 =====================================  
 
-Inputs {.sidebar}
+Inputs {.sidebar data-width=237}
 -----------------------------------------------------------------------
-```{r}
+```{r introduction}
 h4('Introduction')
 ```
 GEO-submitter is an easy to use shiny tool, developed to make submitting gene expression study data easier.
 
-```{r}
+```{r upload bar}
 # Data Type
 tags$hr()
 selectInput(inputId = 'data_type', 
@@ -75,7 +75,7 @@ observeEvent(input$norm, {
 })
 ```
 
-```{r}
+```{r data reactive}
 # Reactive values to store imported data
 data <- reactive({
   
@@ -86,21 +86,55 @@ data <- reactive({
   data <- import_rcc2(input$upload$datapath)
   showNotification("Files processed...", type = "message")
   return(list(genes = data$x, metadata = data$header))
-  
 })
 ```
 
 Application author: [Thomas W. Battaglia](https://github.com/twbattaglia)
 
 
-Column
+Row
 -----------------------------------------------------------------------
 
-### Raw Expression Values
+### Number of genes
 
-```{r}
+```{r valuebox geneN}
+output$geneNumber <- renderValueBox({
+  
+  # Err if NULL
+  if(is.null(data())){
+    return(valueBox(0, caption = "Number of genes", icon = "fa-comments"))
+  }
+  geneN <- nrow(data()$genes)
+  valueBox(geneN,caption = "Number of genes", icon = "fa-comments")
+})
+valueBoxOutput(outputId = "geneNumber")
+```
+
+### Number of samples
+
+```{r valuebox sampleN}
+output$sampleNumber <- renderValueBox({
+  
+  # Err if NULL
+  if(is.null(data())){
+    return(valueBox(0, caption = "Number of samples", icon = "fa-comments"))
+  }
+  
+  sampleN <- ncol(data()$metadata)
+  valueBox(sampleN, caption = "Number of samples", icon = "fa-comments")
+})
+valueBoxOutput(outputId = "sampleNumber")
+```
+
+
+Row 
+-------------------------------------
+   
+### Raw Expression
+  
+```{r raw boxplot}
 output$unnormalized <- renderHighchart({
-
+  
   # Err if NULL
   if(is.null(data())){
     return(NULL)
@@ -109,7 +143,7 @@ output$unnormalized <- renderHighchart({
   # Convert to long format for high charts
   showNotification("Generating Plots...", type = "message")
   long_format <- subset(data()$genes, select = c(-1,-3)) %>%
-  reshape2::melt(id.vars = c("Name")) 
+    reshape2::melt(id.vars = c("Name")) 
   
   # Plot boxplot over gene abundance values
   highchart() %>% 
@@ -118,15 +152,16 @@ output$unnormalized <- renderHighchart({
                           color = "#2980b9")  %>%
     hc_title(text = "Raw Expression Values") %>%
     hc_legend(enabled = FALSE) %>%
-    hc_xAxis(categories = long_format$variable) %>%
+    #hc_xAxis(categories = long_format$variable) %>%
     hc_yAxis(title = list(text = "Log10 gene abundances"))
 })
 highchartOutput("unnormalized")
-```
+``` 
+    
+    
+### Normalized Expression
 
-### Normalized Expression Values
-
-```{r}
+```{r norm boxplot}
 output$normalized <- renderHighchart({
   # Err if NULL
   if(is.null(input$upload)){
@@ -145,8 +180,9 @@ output$normalized <- renderHighchart({
     round.values = FALSE,
     take.log = FALSE,
     return.matrix.of.endogenous.probes = TRUE
-    )
+  )
   
+  # Convert to long format
   long_format <- reshape2::melt(nsn, id.vars = c("Name")) 
   
   # Plot boxplot over gene abundance values
@@ -156,27 +192,21 @@ output$normalized <- renderHighchart({
                           color = "#2980b9")  %>%
     hc_title(text = "Normalized Expression Values") %>%
     hc_legend(enabled = FALSE) %>%
-    hc_xAxis(categories = long_format$Var2) %>%
+    #hc_xAxis(categories = long_format$Var2) %>%
     hc_yAxis(title = list(text = "Log10 gene abundances"))
 })
 highchartOutput("normalized")
 ```
 
-Column 
--------------------------------------
-    
-### Chart 1
-    
-```{r}
-```
+
 
 Experimental setup
 ===================================== 
 
-Inputs {.sidebar}
+Inputs {.sidebar data-width=237}
 -----------------------------------------------------------------------
 This will contain sidebar information
-```{r}
+```{r save author}
 actionButton(inputId = "saveAuthor", label = "Save")
 ```
 
@@ -317,7 +347,7 @@ observeEvent(input$addAuthor, {
 })
 
 
-observeEvent(input$saveAuthor, {
+observeEvent(input$saveExp, {
   
   isolate(
     authors <- author_values$df

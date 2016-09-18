@@ -1,7 +1,7 @@
 library(shinyjs)
 library(knitr)
 library(dplyr)
-library(affy)
+
 library(affy)
 library(gcrma)
 

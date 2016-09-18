@@ -2,8 +2,10 @@
 .Rhistory
 .RData
 .Ruserdata
+*.Rproj
 
 *.dcf
 old/*
 test_data/*
 test.R
+snippets.R

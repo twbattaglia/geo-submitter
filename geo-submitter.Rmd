@@ -130,7 +130,7 @@ valueBoxOutput(outputId = "sampleNumber")
 Row 
 -------------------------------------
    
-### Raw Expression
+### Raw
   
 ```{r raw boxplot}
 output$unnormalized <- renderHighchart({
@@ -159,7 +159,7 @@ highchartOutput("unnormalized")
 ``` 
     
     
-### Normalized Expression
+### Normalized
 
 ```{r norm boxplot}
 output$normalized <- renderHighchart({
@@ -205,9 +205,10 @@ Experimental setup
 
 Inputs {.sidebar data-width=237}
 -----------------------------------------------------------------------
-This will contain sidebar information
-```{r save author}
-actionButton(inputId = "saveAuthor", label = "Save")
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo bibendum imperdiet. Pellentesque pharetra hendrerit feugiat. Fusce ultrices malesuada purus, quis vehicula quam. Nulla facilisi. Phasellus pulvinar lacus id ante scelerisque eleifend. 
+
+```{r save experiment}
+actionButton(inputId = "saveExp", icon = icon("fa-list"), label = "Save Experiment", width = "215px")
 ```
 
 
@@ -216,7 +217,7 @@ Column {.tabset .tabset-fade}
 
 ### General
     
-```{r}
+```{r experimental info 1}
 h4("Name")
 textInput(inputId = "name", 
           label = "Provide an identifier for this entity. This identifier is used only as an internal reference within a given file. The identifier will not appear on final GEO records.", 
@@ -259,7 +260,7 @@ textareaInput(inputId = "extraction",
    
 ### More general
 
-```{r}
+```{r experimental info 2}
 h4("Organism")
 textInput(inputId = "organism", 
           label = "Identify the organism(s) from which the biological material was derived. See http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/", 
@@ -307,31 +308,31 @@ textInput(inputId = "pubmed",
 
 ### Authors
     
-```{r}
-
+```{r author input}
 fluidRow(
     column(width = 4, 
            textInput(inputId = "firstName", 
                      label = h5("First Name"), 
                      value = "", 
-                     placeholder = "John")),
+                     placeholder = "Watson")),
     column(width = 4, 
            textInput(inputId = "middleInitial", 
                      label = h5("Middle Initial"), 
                      value = "", 
-                     placeholder = "E")),
+                     placeholder = "N")),
     column(width = 4, 
            textInput(inputId = "lastName", 
                      label = h5("Last Name"), 
                      value = "", 
-                     placeholder = "Doe"),
-           actionButton(inputId = "addAuthor", label = "Add Author"))
+                     placeholder = "Crick"),
+           actionButton(inputId = "addAuthor", label = "Add Author", icon = icon("fa-list")))
     )
-
 tags$hr()
 ```   
 
-```{r}
+
+
+```{r author table}
 author_values <- reactiveValues()
 author_values$df <- data.frame(First = "",
                                Middle = "",
@@ -345,22 +346,6 @@ observeEvent(input$addAuthor, {
   author_newLine <- isolate(c(input$firstName, input$middleName, input$lastName))
   isolate(author_values$df <- rbind(as.matrix(author_values$df), unlist(author_newLine)))
 })
-
-
-observeEvent(input$saveExp, {
-  
-  isolate(
-    authors <- author_values$df
-  )
-  
-  merged <- apply(authors, 1, paste , collapse = "," )
-  merged <- gsub(pattern = ",,", replacement = ",", x = merged, fixed = T)
-  merged <- gsub(pattern = ".", replacement = "", x = merged, fixed = T)
-  merged <- paste(merged, collapse = ";")
-  
-  
-})
-tableOutput("table")
 ```
 
 
@@ -395,27 +380,18 @@ Export
 =====================================
 The tool will export a Simple Omnibus Format in Text (SOFT) file, which will include all relavent information for a Minimum Information About a Microarray Experiment (MIAME) compliant experiment.
 ```{r}
-exp_values <- reactiveValues()
-exp_values$df <- data.frame(SERIES = "",
-                            Series_title = "",
-                            Series_summary = "",
-                            Series_overall_design = "",
-                            Series_contributor = "",
-                            Series_sample_id = "")
+# Generate a new reactive list
+exp <- reactiveValues()
+exp$values <- list()
 
+# On save add all inputs to a list
 observeEvent(input$Save, {
   showNotification("Saving..", type = "message")
-  exp_newLine <- isolate(c(input$name, input$title, input$summary, input$design, "", ""))
-  if(input$Save < 1){
-    isolate(exp_values$df <- rbind(as.matrix(exp_values$df), unlist(exp_newLine)))
-  } else{ # Fix later
-    isolate(exp_values$df <- rbind(as.matrix(exp_values$df), unlist(exp_newLine)))
-  }
 })
-output$exptable <- renderTable({exp_values$df}, include.rownames = F)
 
-# Run function for generating SOFT file 
-tableOutput("exptable")
+# Render series table
+#output$exptable <- renderTable({exp_values$df}, include.rownames = F)
+#tableOutput("exptable")
 ```
 
 

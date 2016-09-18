@@ -337,15 +337,27 @@ author_values <- reactiveValues()
 author_values$df <- data.frame(First = "",
                                Middle = "",
                                Last = "")
-output$table <- renderTable({author_values$df}, include.rownames = F)
 
+# Observe if 'add author' button is pressed
 observeEvent(input$addAuthor, {
   showNotification("Adding Author...", type = "message")
+  
+  # Require first and last names
   req(input$firstName)
   req(input$lastName)
+  
+  # Add values to data frame
   author_newLine <- isolate(c(input$firstName, input$middleName, input$lastName))
   isolate(author_values$df <- rbind(as.matrix(author_values$df), unlist(author_newLine)))
+  
+  # Concatenate names together for internal use only
+  new_author <- isolate(paste(input$firstName, input$middleName, input$lastName, sep = ","))
+  author_values$dList <- c(isolate(author_values$dList), new_author)
 })
+
+# Render table of authors
+output$author_table <- renderTable({author_values$df}, include.rownames = F)
+tableOutput("author_table")
 ```
 
 
@@ -388,6 +400,10 @@ exp$values <- list()
 observeEvent(input$Save, {
   showNotification("Saving..", type = "message")
 })
+
+
+verbatimTextOutput('list')
+output$list<-renderPrint({ author_values$dList })
 
 # Render series table
 #output$exptable <- renderTable({exp_values$df}, include.rownames = F)

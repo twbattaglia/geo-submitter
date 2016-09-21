@@ -209,13 +209,35 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo bibendum im
 
 ```{r save experiment}
 actionButton(inputId = "saveExp", icon = icon("fa-list"), label = "Save Experiment", width = "215px")
+
+# Store all reactive data assocaited with Series information
+reactive <- reactiveValues()
+
+observeEvent(input$saveExp, {
+  showNotification("Saving data...", type = "message")
+  
+  # On save, add values to appropriate sections
+  # TODO validations
+  reactive$name <- isolate(input$name)
+  reactive$title <- isolate(input$title)
+  reactive$summary <- isolate(input$summary)
+  reactive$design <- isolate(input$design)
+  reactive$extraction <- isolate(input$extraction)
+  reactive$organism <- isolate(input$organism)
+  reactive$extraction <- isolate(input$extraction)
+  reactive$molecule <- isolate(input$molecule)
+  reactive$source_type <- isolate(input$source_type)
+  reactive$platform <- isolate(input$platform)
+  reactive$pubmed <- isolate(input$pubmed)
+})
+
 ```
 
 
 Column {.tabset .tabset-fade}
 -------------------------------------
 
-### General
+### Experimental 
     
 ```{r experimental info 1}
 h4("Name")
@@ -255,10 +277,9 @@ textareaInput(inputId = "extraction",
           label = "How samples were extracted", 
           value = "", 
           placeholder = "Enter text...")
-
 ```
    
-### More general
+### Platform 
 
 ```{r experimental info 2}
 h4("Organism")
@@ -305,7 +326,6 @@ textInput(inputId = "pubmed",
           placeholder = "12345678")
 ```     
 
-
 ### Authors
     
 ```{r author input}
@@ -325,18 +345,17 @@ fluidRow(
                      label = h5("Last Name"), 
                      value = "", 
                      placeholder = "Crick"),
-           actionButton(inputId = "addAuthor", label = "Add Author", icon = icon("fa-list")))
+           actionButton(inputId = "addAuthor", label = "Add Author", icon = icon("fa-list")),
+           actionButton(inputId = "removeAuthor", label = "Remove Author", icon = icon("fa-list")))
     )
 tags$hr()
 ```   
 
 
-
 ```{r author table}
-author_values <- reactiveValues()
-author_values$df <- data.frame(First = "",
-                               Middle = "",
-                               Last = "")
+reactive$authorDF <- data.frame(First = "",
+                                Middle = "",
+                                Last = "")
 
 # Observe if 'add author' button is pressed
 observeEvent(input$addAuthor, {
@@ -346,69 +365,71 @@ observeEvent(input$addAuthor, {
   req(input$firstName)
   req(input$lastName)
   
-  # Add values to data frame
+  # Add values to data frame (for showing)
   author_newLine <- isolate(c(input$firstName, input$middleName, input$lastName))
-  isolate(author_values$df <- rbind(as.matrix(author_values$df), unlist(author_newLine)))
+  isolate(reactive$authorDF <- rbind(as.matrix(reactive$authorDF), unlist(author_newLine)))
   
   # Concatenate names together for internal use only
   new_author <- isolate(paste(input$firstName, input$middleName, input$lastName, sep = ","))
-  author_values$dList <- c(isolate(author_values$dList), new_author)
+  reactive$authorList <- c(isolate(reactive$authorList), new_author)
 })
 
 # Render table of authors
-output$author_table <- renderTable({author_values$df}, include.rownames = F)
+output$author_table <- renderTable({reactive$authorDF}, include.rownames = F)
 tableOutput("author_table")
 ```
-
-
-Sample Information
-===================================== 
-
-Column {data-width=400}
--------------------------------------
-   
-### Chart 2
-
-```{r}
-```   
- 
-### Chart 3
-    
-```{r}
-```
-
-Column {data-width=600}
--------------------------------------
-    
-### Chart 1
-    
-```{r}
-```
-
 
 
 
 Export
 =====================================
+
+Inputs {.sidebar data-width=237}
+-----------------------------------------------------------------------
 The tool will export a Simple Omnibus Format in Text (SOFT) file, which will include all relavent information for a Minimum Information About a Microarray Experiment (MIAME) compliant experiment.
+
+
+Row
+-------------------------------------
+    
+### Author
+    
 ```{r}
-# Generate a new reactive list
-exp <- reactiveValues()
-exp$values <- list()
-
-# On save add all inputs to a list
-observeEvent(input$Save, {
-  showNotification("Saving..", type = "message")
-})
-
-
-verbatimTextOutput('list')
-output$list<-renderPrint({ author_values$dList })
-
-# Render series table
-#output$exptable <- renderTable({exp_values$df}, include.rownames = F)
-#tableOutput("exptable")
+# Dev
+output$authorlist <- renderPrint({ reactive$authorList })
+verbatimTextOutput('authorlist')
 ```
+ 
+### Chart 2
+    
+```{r}
+output$name <- renderPrint({ reactive$name })
+verbatimTextOutput('name')
+``` 
+
+Row
+-------------------------------------
+    
+### Chart 3
+    
+```{r}
+```
+    
+### Export
+
+```{r}
+output$downloadData <- downloadHandler(
+  filename = function() { 
+    paste("soft", '.txt', sep='') 
+  },
+  
+  content = function(file) {
+   # write table function
+  }
+)
+downloadButton('downloadData', 'Download')
+```
+
 
 
 

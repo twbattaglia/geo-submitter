@@ -13,4 +13,8 @@ textareaInput <- function(inputId, label, value="", placeholder="", rows=5){
     tags$textarea(id = inputId, placeholder = placeholder, rows = rows, value))
 }
 
+# For writing data to file
+write_append <- function(..., filename) {
+  write(x = ..., file = filename, append = TRUE)
+}
 

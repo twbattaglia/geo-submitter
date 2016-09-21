@@ -14,6 +14,7 @@ library(flexdashboard)
 library(highcharter)
 library(NanoStringNorm)
 library(ggplot2)
+library(reshape2)
 library(shiny)
 library(shinyjs)
 source("util/helpers.R")
@@ -131,8 +132,8 @@ Row
 -------------------------------------
    
 ### Raw
-  
-```{r raw boxplot}
+
+```{r raw_boxplot}
 output$unnormalized <- renderHighchart({
   
   # Err if NULL
@@ -157,11 +158,11 @@ output$unnormalized <- renderHighchart({
 })
 highchartOutput("unnormalized")
 ``` 
-    
-    
+
+
 ### Normalized
 
-```{r norm boxplot}
+```{r norm_boxplot}
 output$normalized <- renderHighchart({
   # Err if NULL
   if(is.null(input$upload)){
@@ -208,15 +209,17 @@ Inputs {.sidebar data-width=237}
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo bibendum imperdiet. Pellentesque pharetra hendrerit feugiat. Fusce ultrices malesuada purus, quis vehicula quam. Nulla facilisi. Phasellus pulvinar lacus id ante scelerisque eleifend. 
 
 ```{r save experiment}
+# Save experiemental information
 actionButton(inputId = "saveExp", icon = icon("fa-list"), label = "Save Experiment", width = "215px")
 
 # Store all reactive data assocaited with Series information
 reactive <- reactiveValues()
 
+
+# On save, add values to appropriate sections
 observeEvent(input$saveExp, {
   showNotification("Saving data...", type = "message")
   
-  # On save, add values to appropriate sections
   # TODO validations
   reactive$name <- isolate(input$name)
   reactive$title <- isolate(input$title)
@@ -229,6 +232,14 @@ observeEvent(input$saveExp, {
   reactive$source_type <- isolate(input$source_type)
   reactive$platform <- isolate(input$platform)
   reactive$pubmed <- isolate(input$pubmed)
+  
+  # Add sampleN for easier looping
+  if(is.null(data())){
+    reactive$sampleN <- 0
+  } else{
+    reactive$sampleN <- isolate(ncol(data()$metadata))
+  }
+  
 })
 
 ```
@@ -366,11 +377,15 @@ observeEvent(input$addAuthor, {
   req(input$lastName)
   
   # Add values to data frame (for showing)
-  author_newLine <- isolate(c(input$firstName, input$middleName, input$lastName))
+  author_newLine <- isolate(c(input$firstName, input$middleInitial, input$lastName))
   isolate(reactive$authorDF <- rbind(as.matrix(reactive$authorDF), unlist(author_newLine)))
   
   # Concatenate names together for internal use only
-  new_author <- isolate(paste(input$firstName, input$middleName, input$lastName, sep = ","))
+  new_author <- isolate(
+    paste(input$firstName, input$middleName, input$lastName, sep = ",") %>% 
+      gsub(pattern = ",,", replacement = ",", x = ., fixed = T) %>%  # fix no middle initials
+      gsub(pattern = ".", replacement = "", x = ., fixed = T) # fix dots in middle initials
+    )
   reactive$authorList <- c(isolate(reactive$authorList), new_author)
 })
 
@@ -388,6 +403,10 @@ Inputs {.sidebar data-width=237}
 -----------------------------------------------------------------------
 The tool will export a Simple Omnibus Format in Text (SOFT) file, which will include all relavent information for a Minimum Information About a Microarray Experiment (MIAME) compliant experiment.
 
+```{r}
+downloadLink(outputId = 'downloadData', label = 'Download')
+
+```
 
 Row
 -------------------------------------
@@ -420,14 +439,32 @@ Row
 ```{r}
 output$downloadData <- downloadHandler(
   filename = function() { 
-    paste("soft", '.txt', sep='') 
+    paste("soft", '.txt', sep = '') 
   },
   
   content = function(file) {
-   # write table function
+    
+    # Write series information
+    write_append(paste0("^SERIES = ", isolate(reactive$name)), filename = file)
+    write_append(paste0("!Series_title = ", isolate(reactive$title)), filename = file)
+    write_append(paste0("!Series_summary = ", isolate(reactive$summary)), filename = file)
+    write_append(paste0("!Series_overall_design = ", isolate(reactive$design)), filename = file)
+
+    # Loop over each number of samples
+    for(i in 1:isolate(reactive$sampleN)){
+      write_append(paste0("!Series_sample_id = ", as.character(i)), filename = file)
+    }
+    
+    # Loop over each number of samples
+    for(i in isolate(reactive$authorList)){
+      write_append(paste0("!Series_contributor = ", i), filename = file)
+    }
+    
+    # Eventual sample information
+    
+    
   }
 )
-downloadButton('downloadData', 'Download')
 ```
 
 

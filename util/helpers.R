@@ -18,3 +18,18 @@ write_append <- function(..., filename) {
   write(x = ..., file = filename, append = TRUE)
 }
 
+
+# Fix upload file names
+# from https://github.com/daattali/advanced-shiny/blob/master/upload-file-names/app.R
+fixUploadedFilesNames <- function(x) {
+  if (is.null(x)) {
+    return()
+  }
+  
+  oldNames = x$datapath
+  newNames = file.path(dirname(x$datapath),
+                       x$name)
+  file.rename(from = oldNames, to = newNames)
+  x$datapath <- newNames
+  x
+}

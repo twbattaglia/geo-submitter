@@ -84,9 +84,31 @@ data <- reactive({
   if(is.null(input$upload)){
     return(NULL)
   }
+  
+  # Fix uploaded names (maybe remove)
+  #fixed <- fixUploadedFilesNames(input$upload)
+  
+  # Import RCC files and convert to table/metadata
   data <- import_rcc2(input$upload$datapath)
+  
+  # Find number of genes
+  sampleGene <- nrow(data$x)
+  
+  # Find the number the samples
+  sampleN <- ncol(data$x)-3
+  
+  # Find sample ID's
+  sampleID <- colnames(data$header)
+  
+  # Show progress message
   showNotification("Files processed...", type = "message")
-  return(list(genes = data$x, metadata = data$header))
+  
+  # Return a list og genes and metadata
+  return(list(genes = data$x, 
+              metadata = data$header,
+              sampleN = sampleN,
+              sampleID = sampleID,
+              sampleGene = sampleGene))
 })
 ```
 
@@ -411,22 +433,21 @@ Column {data-width=300}
 ### Chart 1
     
 ```{r sample characteristic}
-selectInput(inputId = "sampleChar", 
-            label = h5("Choose characteristic"), 
-            choices = c("dose", "time", "tissue", "strain", "gender", "cell line", "development stage", "age", "agent", "cell type", "infection", "isolate", "metabolism", "shock", "stress", "temperature", "specimen", "disease state", "protocol", "growth protocol", "genotype/variation", "species", "individual", "other"), 
-            selectize = T)
+h4("Choose characteristics")
+selectizeInput(inputId = "sampleChar", label = helpText("Fusce ultrices malesuada purus, quis vehicula quam. Nulla facilisi. Phasellus pulvinar lacus id ante scelerisque eleifend."), 
+            choices = c("dose", "time", "tissue", "strain", "gender", "cell line", "development stage", "age", "agent", "cell type", "infection", "isolate", "metabolism", "shock", "stress", "temperature", "specimen", "disease state", "protocol", "growth protocol", "genotype/variation", "species", "individual"), 
+            options = list(create = TRUE),
+            multiple = TRUE)
 
 # Condition if other is selected
-conditionalPanel(condition = "input.sampleChar == 'other'",
-                 textInput(inputId = "other", 
-                           value = "", 
-                           label = h5("Other variable name"))
-                 )
-
-tags$hr()
+#conditionalPanel(condition = "input.sampleChar == 'other'",
+#                 textInput(inputId = "other", 
+#                           value = "", 
+#                           label = h5("Other variable name"))
+#                 )
+#tags$hr()
 
 ```
-
 
 
 Column 
@@ -435,6 +456,8 @@ Column
 ### Chart 2
     
 ```{r sample select}
+
+
 ```
 
 
@@ -457,16 +480,19 @@ Row
 ### Author
     
 ```{r}
-# Dev
-output$authorlist <- renderPrint({ reactive$authorList })
-verbatimTextOutput('authorlist')
+output$test1 <- renderPrint({ 
+  input$sampleChar
+})
+verbatimTextOutput('test1')
 ```
  
 ### Chart 2
     
 ```{r}
-output$name <- renderPrint({ reactive$name })
-verbatimTextOutput('name')
+output$test2 <- renderPrint({ 
+  data()$sampleID 
+})
+verbatimTextOutput('test2')
 ``` 
 
 Row
@@ -475,6 +501,10 @@ Row
 ### Chart 3
     
 ```{r}
+output$test3 <- renderPrint({ 
+  data()$sampleID 
+})
+verbatimTextOutput('test3')
 ```
     
 ### Export

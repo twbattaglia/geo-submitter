@@ -142,7 +142,7 @@ output$unnormalized <- renderHighchart({
   }
   
   # Convert to long format for high charts
-  showNotification("Generating Plots...", type = "message")
+  showNotification("Plotting raw values...", type = "message")
   long_format <- subset(data()$genes, select = c(-1,-3)) %>%
     reshape2::melt(id.vars = c("Name")) 
   
@@ -160,6 +160,7 @@ highchartOutput("unnormalized")
 ``` 
 
 
+
 ### Normalized
 
 ```{r norm_boxplot}
@@ -170,7 +171,7 @@ output$normalized <- renderHighchart({
   }
   
   # Convert to long format for high charts
-  showNotification("Generating Plots...", type = "message")
+  showNotification("Plotting normalized values...", type = "message")
   
   nsn <- NanoStringNorm::NanoStringNorm(
     x = data()$genes,
@@ -214,7 +215,6 @@ actionButton(inputId = "saveExp", icon = icon("fa-list"), label = "Save Experime
 
 # Store all reactive data assocaited with Series information
 reactive <- reactiveValues()
-
 
 # On save, add values to appropriate sections
 observeEvent(input$saveExp, {
@@ -271,8 +271,7 @@ tags$hr()
 
 h4("Summary")
 textareaInput(inputId = "summary", 
-          label = "Summarize the goals and objectives of this study. 
-          The abstract from the associated publication may be suitable.", 
+          label = "Summarize the goals and objectives of this study. The abstract from the associated publication may be suitable. You can include as much text as you need to thoroughly describe the study.", 
           value = "", 
           placeholder = "Enter text...")
 
@@ -376,16 +375,18 @@ observeEvent(input$addAuthor, {
   req(input$firstName)
   req(input$lastName)
   
-  # Add values to data frame (for showing)
+  # Add values to data frame (for viewing table)
   author_newLine <- isolate(c(input$firstName, input$middleInitial, input$lastName))
   isolate(reactive$authorDF <- rbind(as.matrix(reactive$authorDF), unlist(author_newLine)))
   
-  # Concatenate names together for internal use only
+  # Concatenate names together (for internal use)
   new_author <- isolate(
     paste(input$firstName, input$middleName, input$lastName, sep = ",") %>% 
       gsub(pattern = ",,", replacement = ",", x = ., fixed = T) %>%  # fix no middle initials
       gsub(pattern = ".", replacement = "", x = ., fixed = T) # fix dots in middle initials
     )
+  
+  # Add authors as a reactive list
   reactive$authorList <- c(isolate(reactive$authorList), new_author)
 })
 
@@ -396,7 +397,49 @@ tableOutput("author_table")
 
 
 
-Export
+
+Sample data
+=====================================
+
+Inputs {.sidebar data-width=237}
+-----------------------------------------------------------------------
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo bibendum imperdiet. Pellentesque pharetra hendrerit feugiat. Fusce ultrices malesuada purus, quis vehicula quam. Nulla facilisi. Phasellus pulvinar lacus id ante scelerisque eleifend. 
+
+Column {data-width=300}
+-------------------------------------
+    
+### Chart 1
+    
+```{r sample characteristic}
+selectInput(inputId = "sampleChar", 
+            label = h5("Choose characteristic"), 
+            choices = c("dose", "time", "tissue", "strain", "gender", "cell line", "development stage", "age", "agent", "cell type", "infection", "isolate", "metabolism", "shock", "stress", "temperature", "specimen", "disease state", "protocol", "growth protocol", "genotype/variation", "species", "individual", "other"), 
+            selectize = T)
+
+# Condition if other is selected
+conditionalPanel(condition = "input.sampleChar == 'other'",
+                 textInput(inputId = "other", 
+                           value = "", 
+                           label = h5("Other variable name"))
+                 )
+
+tags$hr()
+
+```
+
+
+
+Column 
+-------------------------------------
+    
+### Chart 2
+    
+```{r sample select}
+```
+
+
+
+Review & Export
 =====================================
 
 Inputs {.sidebar data-width=237}

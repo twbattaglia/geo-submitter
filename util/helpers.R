@@ -12,7 +12,7 @@ library(gcrma)
 # Larger Text Area Input
 textareaInput <- function(inputId, label, value = "", placeholder = "", rows = 4){
   tagList(
-    div(strong(label), style = "margin-top: 5px;"),
+    div(label, style = "margin-top: 5px;"),
     tags$style(type = "text/css", "textarea {width:100%; margin-top: 5px;}"),
     tags$textarea(id = inputId, placeholder = placeholder, rows = rows, value))
 }

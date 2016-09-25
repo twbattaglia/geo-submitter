@@ -394,7 +394,7 @@ textareaInput(inputId = "design",
 ```{r platform}
 h4("Organism")
 textInput(inputId = "organism", 
-          label = "Identify the organism(s) from which the biological material was derived. See http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/", 
+          label = p("Identify the organism(s) from which the biological material was derived. See", a("NCBI Taxonomy", href="http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/"), " for a listing."),
           value = "",
           width = "400px",
           placeholder = "Mus musculus")
@@ -406,7 +406,7 @@ selectInput(inputId = 'molecule',
             label = 'Specify the type of molecule that was extracted from the biological material.', 
             choices = c("total RNA", "polyA RNA", "cytoplasmic RNA", "nuclear RNA", "genomic DNA", "protein", "other"),
             width = "400px",
-            selectize=TRUE)
+            selectize = TRUE)
 
 tags$hr()
 
@@ -452,26 +452,30 @@ textInput(inputId = "pubmed",
 h4("Extraction Protocol")
 textareaInput(inputId = "extraction", 
               label = "Describe the protocol used to isolate the extract material. You can include as much text as you need to thoroughly describe the protocol.", 
-              value = "TRIzol (Invitrogen) followed by RNeasy column cleanup (Qiagen) using the manufacturers protocols", 
-              placeholder = "Enter text...")
+              value = "", 
+              placeholder = "TRIzol (Invitrogen) followed by RNeasy column cleanup (Qiagen) using the manufacturers protocols.")
+tags$hr()
 
 h4("Labeling Protocol")
 textareaInput(inputId = "labeling", 
               label = "Describe the protocol used to label the extract. You can include as much text as you need to thoroughly describe the protocol.", 
               value = "", 
               placeholder = "Enter text...")
+tags$hr()
 
 h4("Hybridization Protocol")
 textareaInput(inputId = "hybridization", 
               label = "Describe the protocols used for hybridization, blocking and washing, and any post-processing steps such as staining.", 
               value = "", 
               placeholder = "Enter text...")
+tags$hr()
 
 h4("Scanning Protocol")
 textareaInput(inputId = "scanning", 
               label = "Describe the scanning and image acquisition protocols, hardware, and software. You can include as much text as you need to thoroughly describe the protocol.", 
               value = "", 
               placeholder = "Enter text...")
+tags$hr()
 
 h4("Data Processing Protocol")
 textareaInput(inputId = "data_processing", 

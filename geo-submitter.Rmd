@@ -36,16 +36,18 @@ GEO-submitter is an easy to use shiny tool, developed to make submitting gene ex
 ```{r upload bar}
 # Data Type
 tags$hr()
+h4('Data Type')
 selectInput(inputId = 'data_type', 
-            label = h4('Data Type'), 
+            label = helpText("Help text with eventually go here."), 
             choices = c('Nanostring', "Microarray"), 
             selected = "Nanostring", 
             selectize = T)
 tags$hr()
 
 # Input Files
+h4('Upload Files')
 fileInput(inputId = 'upload', 
-          label = h4('Upload Files'),
+          label = helpText("Help text with eventually go here."), 
           multiple = T,
           accept = c(
             '.RCC',
@@ -56,8 +58,9 @@ fileInput(inputId = 'upload',
 tags$hr()
 
 # Normalization method
+h4('Normalization Method')
 selectInput(inputId = "normalization", 
-            label = h4('Normalization Method'), 
+            label = helpText("Help text with eventually go here."), 
             choices = c("Housekeeping-Sum" = "housekeeping.sum",
                         "Housekeeping-Mean" = "housekeeping.geo.mean", 
                         "DESeq2" = "deseq2"), 
@@ -126,10 +129,10 @@ output$geneNumber <- renderValueBox({
   
   # Err if NULL
   if(is.null(data())){
-    return(valueBox(0, caption = "Number of genes", icon = "fa-comments"))
+    return(valueBox(0, caption = "Number of genes", icon = "fa-cubes"))
   }
   geneN <- nrow(data()$genes)
-  valueBox(geneN,caption = "Number of genes", icon = "fa-comments")
+  valueBox(geneN,caption = "Number of genes", icon = "fa-cubes")
 })
 valueBoxOutput(outputId = "geneNumber")
 ```
@@ -141,11 +144,11 @@ output$sampleNumber <- renderValueBox({
   
   # Err if NULL
   if(is.null(data())){
-    return(valueBox(0, caption = "Number of samples", icon = "fa-comments"))
+    return(valueBox(0, caption = "Number of samples", icon = "fa-users"))
   }
   
   sampleN <- ncol(data()$metadata)
-  valueBox(sampleN, caption = "Number of samples", icon = "fa-comments")
+  valueBox(sampleN, caption = "Number of samples", icon = "fa-users")
 })
 valueBoxOutput(outputId = "sampleNumber")
 ```
@@ -233,7 +236,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo bibendum im
 
 ```{r save experiment}
 # Save experiemental information
-actionButton(inputId = "saveExp", icon = icon("fa-list"), label = "Save", width = "215px")
+actionButton(inputId = "saveExp", icon = icon("floppy-o"), label = "Save", width = "215px")
 
 # Store all reactive data assocaited with Series information
 reactive <- reactiveValues()
@@ -247,18 +250,24 @@ observeEvent(input$saveExp, {
   reactive$title <- isolate(input$title)
   reactive$summary <- isolate(input$summary)
   reactive$design <- isolate(input$design)
-  reactive$extraction <- isolate(input$extraction)
+  
   reactive$organism <- isolate(input$organism)
   reactive$molecule <- isolate(input$molecule)
   reactive$source_type <- isolate(input$source_type)
   reactive$platform <- isolate(input$platform)
   reactive$pubmed <- isolate(input$pubmed)
   
+  reactive$extraction <- isolate(input$extraction)
+  reactive$labeling <- isolate(input$labeling)
+  reactive$hybridization <- isolate(input$hybridization)
+  reactive$scanning <- isolate(input$scanning)
+  reactive$data_processing <- isolate(input$data_processing)
+
   # Add sampleN for easier looping
   if(is.null(data())){
     reactive$sampleN <- 0
   } else{
-    reactive$sampleN <- isolate(ncol(data()$metadata))
+    reactive$sampleN <- isolate(data()$sampleN)
   }
   
 })
@@ -419,13 +428,19 @@ reactive$authorDF <- data.frame(First = "",
 
 # Observe if 'add author' button is pressed
 observeEvent(input$addAuthor, {
-  showNotification("Adding Author...", type = "message")
+  
+  # Require first and last names
+  if(is.na(input$firstName) | is.na(input$lastName)){
+    showNotification("Error Adding Author...", type = "error")
+  }
   
   # Require first and last names
   req(input$firstName)
   req(input$lastName)
   
+  
   # Add values to data frame (for viewing table)
+  showNotification("Adding Author...", type = "message")
   author_newLine <- isolate(c(input$firstName, input$middleInitial, input$lastName))
   isolate(reactive$authorDF <- rbind(as.matrix(reactive$authorDF), unlist(author_newLine)))
   
@@ -454,7 +469,7 @@ Inputs {.sidebar data-width=237}
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo bibendum imperdiet. Pellentesque pharetra hendrerit feugiat. Fusce ultrices malesuada purus, quis vehicula quam. Nulla facilisi. Phasellus pulvinar lacus id ante scelerisque eleifend. 
 ```{r save sample}
 # Save sample information
-actionButton(inputId = "saveSample", icon = icon("fa-list"), label = "Save", width = "215px")
+actionButton(inputId = "saveSample", icon = icon("floppy-o"), label = "Save", width = "215px")
 observeEvent(input$saveSample, {
   showNotification("Saving data...", type = "message")
 })
@@ -652,19 +667,19 @@ output$downloadData <- downloadHandler(
       write_append(paste0("!Sample_molecule", " = ", isolate(reactive$molecule)), filename = file)
       
       # Write !Sample_extract_protocol
-      write_append(paste0("!Sample_extract_protocol", " = ", isolate(reactive$organism)), filename = file)
+      write_append(paste0("!Sample_extract_protocol", " = ", isolate(reactive$extraction)), filename = file)
       
       # Write !Sample_label_protocol
-      write_append(paste0("!Sample_label_protocol", " = ", isolate(reactive$organism)), filename = file)
+      write_append(paste0("!Sample_label_protocol", " = ", isolate(reactive$labeling)), filename = file)
       
       # Write !Sample_hyb_protocol
-      write_append(paste0("!Sample_hyb_protocol", " = ", isolate(reactive$organism)), filename = file)
+      write_append(paste0("!Sample_hyb_protocol", " = ", isolate(reactive$hybridization)), filename = file)
       
       # Write !Sample_scan_protocol
-      write_append(paste0("!Sample_scan_protocol", " = ", isolate(reactive$organism)), filename = file)
+      write_append(paste0("!Sample_scan_protocol", " = ", isolate(reactive$scanning)), filename = file)
       
       # Write !Sample_data_processing
-      write_append(paste0("!Sample_data_processing", " = ", isolate(reactive$organism)), filename = file)
+      write_append(paste0("!Sample_data_processing", " = ", isolate(reactive$data_processing)), filename = file)
       
       # Subset the expression values
       nsn_sub <- subset(nsn, select = i)

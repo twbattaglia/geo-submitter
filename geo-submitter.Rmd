@@ -15,6 +15,7 @@ library(shiny)
 source("util/helpers.R")
 source("util/import_rcc.R")
 options(shiny.maxRequestSize = 9*1024^2) # 9mb limit
+tags$head(tags$script(src = "js/ga.js")) # google analystics
 ```
 
 

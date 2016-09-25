@@ -351,6 +351,15 @@ textInput(inputId = "platform",
 
 tags$hr()
 
+h4("Label Type")
+textInput(inputId = "label", 
+          label = "Specify the compound used to label the extract e.g., biotin, Cy3, Cy5, 33P.", 
+          value = "", 
+          width = "400px",
+          placeholder = "biotin")
+
+tags$hr()
+
 h4("Pubmed ID (Optional)")
 textInput(inputId = "pubmed", 
           label = "Optionally, specify a valid PubMed identifier (PMID) that references a published article describing this study. Most commonly, this information is not available at the time of submission - it can be added later once the data are published.", 
@@ -438,7 +447,6 @@ observeEvent(input$addAuthor, {
   req(input$firstName)
   req(input$lastName)
   
-  
   # Add values to data frame (for viewing table)
   showNotification("Adding Author...", type = "message")
   author_newLine <- isolate(c(input$firstName, input$middleInitial, input$lastName))
@@ -449,7 +457,7 @@ observeEvent(input$addAuthor, {
     paste(input$firstName, input$middleName, input$lastName, sep = ",") %>% 
       gsub(pattern = ",,", replacement = ",", x = ., fixed = T) %>%  # fix no middle initials
       gsub(pattern = ".", replacement = "", x = ., fixed = T) # fix dots in middle initials
-    )
+  )
   
   # Add authors as a reactive list
   reactive$authorList <- c(isolate(reactive$authorList), new_author)
@@ -467,6 +475,7 @@ Sample data
 Inputs {.sidebar data-width=237}
 -----------------------------------------------------------------------
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo bibendum imperdiet. Pellentesque pharetra hendrerit feugiat. Fusce ultrices malesuada purus, quis vehicula quam. Nulla facilisi. Phasellus pulvinar lacus id ante scelerisque eleifend. 
+
 ```{r save sample}
 # Save sample information
 actionButton(inputId = "saveSample", icon = icon("floppy-o"), label = "Save", width = "215px")
@@ -661,7 +670,7 @@ output$downloadData <- downloadHandler(
       write_append(paste0("!Sample_organism", " = ", isolate(reactive$organism)), filename = file)
 
       # Write !Sample_label
-      write_append(paste0("!Sample_label", " = ", isolate(reactive$organism)), filename = file)
+      write_append(paste0("!Sample_label", " = ", isolate(reactive$label)), filename = file)
       
       # Write !Sample_molecule
       write_append(paste0("!Sample_molecule", " = ", isolate(reactive$molecule)), filename = file)

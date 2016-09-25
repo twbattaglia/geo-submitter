@@ -24,7 +24,7 @@ Introduction {data-orientation=rows}
 Column
 -------------------------------------
     
-###  
+### Introduction
     
 ```{r introduction}
 h4('Introduction')
@@ -33,7 +33,7 @@ GEO-submitter is an easy to use shiny tool, developed to make submitting gene ex
 Application author: [Thomas W. Battaglia](https://github.com/twbattaglia)
 
     
-###  
+### Normalization Methods
 
 ```{r}
 ```
@@ -43,36 +43,38 @@ Application author: [Thomas W. Battaglia](https://github.com/twbattaglia)
 Upload {data-orientation=rows}
 =====================================  
 
-Inputs {.sidebar data-width=237}
+Inputs {.sidebar data-width=267}
 -----------------------------------------------------------------------
 
 ```{r upload bar}
 # Data Type
 h4('Data Type')
-selectInput(inputId = 'dataType', 
-            label = helpText("Select an array platform."), 
-            choices = c("Select", 'Nanostring', "Microarray"), 
-            selectize = T)
+selectizeInput(inputId = 'dataType', width = NULL,
+               label = helpText("Select an array platform type."), 
+               choices = c('Nanostring', "Microarray"), 
+               options = list(placeholder = 'Select array type...     ', 
+                              onInitialize = I('function() { this.setValue(""); }'))
+               )
 tags$hr()
 
 # Input Files
 h4('Upload Files')
 fileInput(inputId = 'upload', 
-          label = helpText("Use 'Shift' to highlight multiple files."), 
+          label = helpText("Use 'Shift' to select multiple files."), 
           multiple = T,
           accept = c(
-            '.rcc',
-            '.rcc.gz', 
-            '.cel',
-            '.cel.gz')
+            '.RCC',
+            '.RCC.gz', 
+            '.CEL',
+            '.CEL.gz')
       )
 tags$hr()
 
 # Normalization method
 conditionalPanel(condition = "input.dataType == 'Nanostring'",
                  h4('Normalization Method'),
-                 selectInput(inputId = "normalization", 
-                             label = helpText("Help text with eventually go here."), 
+                 selectInput(inputId = "normalizationNS", 
+                             label = helpText("Select a normalization method"), 
                              choices = c("Housekeeping-Sum" = "housekeeping.sum",
                                          "Housekeeping-Mean" = "housekeeping.geo.mean", 
                                          "DESeq2" = "deseq2"), 
@@ -80,17 +82,18 @@ conditionalPanel(condition = "input.dataType == 'Nanostring'",
                  tags$hr()
 )
 
-# Normalization method
 conditionalPanel(condition = "input.dataType == 'Microarray'",
                  h4('Normalization Method'),
-                 selectInput(inputId = "normalization", 
-                             label = helpText("Help text with eventually go here."), 
+                 selectInput(inputId = "normalizationMA", 
+                             label = helpText("Select normalization method."), 
                              choices = c("RMA" = "RMA",
                                          "MAS5" = "MAS5", 
                                          "GCRMA" = "GCRMA"), 
                              selectize = T),
                  tags$hr()
 )
+
+
 ```
 
 ```{r data reactive}
@@ -104,7 +107,8 @@ data <- reactive({
   
   # Conditionals for data source type
   if(input$dataType == "Nanostring"){
-    
+    showNotification("Processing Nanostring...", type = "message")
+
     # Import RCC files and convert to table/metadata
     data <- import_rcc2(input$upload$datapath)
     
@@ -117,74 +121,96 @@ data <- reactive({
     # sample ID's
     sampleID <- colnames(data$header)
     
-    # Normalized data
-    if(input$normalization != "deseq2"){
+    # un-normalized data for boxplot
+    unnorm_boxplot <- subset(data$x, select = c(-1,-3)) %>% 
+         reshape2::melt(id.vars = c("Name")) 
+    
+    # Normalized data (fix later with new normalization techniques)
+    if(input$normalizationNS != "deseq2"){
       normalized <- NanoStringNorm(
         x = data$x,
         anno = NA,
         CodeCount = 'sum',
         Background = 'mean',
-        SampleContent = input$normalization,
+        SampleContent = input$normalizationNS,
         round.values = FALSE,
         take.log = FALSE,
         return.matrix.of.endogenous.probes = TRUE
       )
+      
+      # normalized data for boxplot
+      norm_boxplot <- melt(normalized, id.vars = c("Name"), varnames = c("gene", "variable")) 
+      
     }
     
     # Show progress message
-    showNotification("Data processed...", type = "message")
+    showNotification("Processing complete...", type = "message")
     
-    # Return a list og genes and metadata
+    # Return a list of genes and metadata
     return(
       list(
-        genes = data$x, 
-        metadata = data$header,
         sampleN = sampleN,
         sampleID = sampleID,
         geneN = geneN,
-        normalized = normalized)
+        normalized = normalized,
+        unnorm_boxplot = unnorm_boxplot,
+        norm_boxplot = norm_boxplot)
     )
     
   }else if(input$dataType == "Microarray"){
+    showNotification("Processing Microarray..", type = "message")
     
     # Load data with affy package
     ab <- ReadAffy(filenames = input$upload$datapath, compress = T, sampleNames = input$upload$name)
     
+    # Un normalized data for boxplot
+    unnorm_boxplot <- melt(pm(ab), id.vars = c("Name"), varnames = c("gene", "variable")) 
+
     # sample N
     sampleN <- length(pData(ab)$sample)
-    
-    # sampleID
-    
+
+    # SampleID
+    sampleID <- row.names(pData(ab))
+
     # Normalize based on 
-    if (input$normalization == "RMA"){
-      showNotification("Normalizing Data...", type = "warning")
+    if (input$normalizationMA == "RMA"){
+      showNotification("Normalizing Data. Please wait...", type = "warning", duration = 20)
       normalized <- rma(ab)
       geneN <- nrow(normalized@featureData@data)
-      
-    } else if (input$normalization == "MAS5"){
-      showNotification("Normalizing Data...", type = "warning")
+      norm_boxplot <- melt(exprs(normalized), id.vars = c("Name"), varnames = c("gene", "variable")) 
+
+    } else if (input$normalizationMA == "MAS5"){
+      showNotification("Normalizing Data. Please wait...", type = "warning", duration = 15)
       normalized <- mas5(ab)
       geneN <- nrow(normalized@featureData@data)
-      
-    } else if (input$normalization == "GCRMA"){
-      showNotification("Normalizing Data...", type = "warning")
+      norm_boxplot <- melt(exprs(normalized), id.vars = c("Name"), varnames = c("gene", "variable")) 
+
+    } else if (input$normalizationMA == "GCRMA"){
+      showNotification("Normalizing Data. Please wait...", type = "warning", duration = 15)
       normalized <- gcrma(ab)
       geneN <- nrow(normalized@featureData@data)
+      norm_boxplot <- melt(exprs(normalized), id.vars = c("Name"), varnames = c("gene", "variable")) 
+
+    } else{
+      showNotification("Error processing data...", type = "error")
+      return()
     }
     
-    # Return a list og genes and metadata
+    # Show progress message
+    showNotification("Processing complete...", type = "message")
+    
+    # Return a list of genes and metadata
     return(
       list(
-        genes = data$x, 
         sampleN = sampleN,
         sampleID = sampleID,
         geneN = geneN,
-        normalized = normalized)
+        normalized = normalized,
+        unnorm_boxplot = unnorm_boxplot,
+        norm_boxplot = norm_boxplot)
     )
     
-    # Show progress message
-    showNotification("Files processed...", type = "message")
-  } 
+  } # end of microarray
   
 })
 ```
@@ -213,7 +239,7 @@ valueBoxOutput(outputId = "geneNumber")
 output$sampleNumber <- renderValueBox({
   
   # Err if NULL
-  if(is.null(data())){
+  if(is.null(data()$sampleN)){
     return(valueBox(0, caption = "Number of samples", icon = "fa-users"))
   }
   
@@ -232,23 +258,20 @@ Row
 output$unnormalized <- renderHighchart({
   
   # Err if NULL
-  if(is.null(data())){
+  if(is.null(data()$unnorm_boxplot)){
     return(NULL)
   }
   
   # Convert to long format for high charts
   showNotification("Plotting raw values...", type = "message")
-  long_format <- subset(data()$genes, select = c(-1,-3)) %>%
-    reshape2::melt(id.vars = c("Name")) 
   
   # Plot boxplot over gene abundance values
   highchart() %>% 
-    hc_add_series_boxplot(x = log(long_format$value), 
-                          by = long_format$variable,
+    hc_add_series_boxplot(x = log(data()$unnorm_boxplot$value), 
+                          by = data()$unnorm_boxplot$variable,
                           color = "#2980b9")  %>%
     hc_title(text = "Raw Expression Values") %>%
     hc_legend(enabled = FALSE) %>%
-    #hc_xAxis(categories = long_format$variable) %>%
     hc_yAxis(title = list(text = "Log10 gene abundances"))
 })
 highchartOutput("unnormalized")
@@ -260,24 +283,20 @@ highchartOutput("unnormalized")
 output$normalized <- renderHighchart({
   
   # Err if NULL
-  if(is.null(input$upload)){
+  if(is.null(data()$norm_boxplot)){
     return(NULL)
   }
   
   # Convert to long format for high charts
   showNotification("Plotting normalized values...", type = "message")
   
-  # Convert to long format
-  long_format <- reshape2::melt(data()$normalized, id.vars = c("Name")) 
-  
   # Plot boxplot over gene abundance values
   highchart() %>% 
-    hc_add_series_boxplot(x = log(long_format$value), 
-                          by = long_format$Var2,
+    hc_add_series_boxplot(x = log(data()$norm_boxplot$value), 
+                          by = data()$norm_boxplot$variable,
                           color = "#2980b9")  %>%
     hc_title(text = "Normalized Expression Values") %>%
     hc_legend(enabled = FALSE) %>%
-    #hc_xAxis(categories = long_format$Var2) %>%
     hc_yAxis(title = list(text = "Log10 gene abundances"))
 })
 highchartOutput("normalized")
@@ -287,7 +306,7 @@ highchartOutput("normalized")
 Experimental setup
 ===================================== 
 
-Inputs {.sidebar data-width=237}
+Inputs {.sidebar data-width=267}
 -----------------------------------------------------------------------
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo bibendum imperdiet. Pellentesque pharetra hendrerit feugiat. Fusce ultrices malesuada purus, quis vehicula quam. Nulla facilisi. Phasellus pulvinar lacus id ante scelerisque eleifend. 
 
@@ -472,7 +491,7 @@ fluidRow(
                      placeholder = "Watson")),
     column(width = 4, 
            textInput(inputId = "middleInitial", 
-                     label = h5("Middle Initial"), 
+                     label = h5("Middle Initial (optional)"), 
                      value = "", 
                      placeholder = "N")),
     column(width = 4, 
@@ -529,7 +548,7 @@ tableOutput("author_table")
 Sample data
 =====================================
 
-Inputs {.sidebar data-width=237}
+Inputs {.sidebar data-width=267}
 -----------------------------------------------------------------------
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo bibendum imperdiet. Pellentesque pharetra hendrerit feugiat. Fusce ultrices malesuada purus, quis vehicula quam. Nulla facilisi. Phasellus pulvinar lacus id ante scelerisque eleifend. 
 
@@ -613,7 +632,7 @@ fillCol(rHandsontableOutput("hot"))
 Review & Export
 =====================================
 
-Inputs {.sidebar data-width=237}
+Inputs {.sidebar data-width=267}
 -----------------------------------------------------------------------
 The tool will export a Simple Omnibus Format in Text (SOFT) file, which will include all relavent information for a Minimum Information About a Microarray Experiment (MIAME) compliant experiment.
 
@@ -652,7 +671,15 @@ Row
     
 ```{r}
 output$test3 <- renderPrint({ 
-  data()$sampleID 
+  if(is.null(data())){
+    return()
+  }
+  c(data()$sampleN,
+    data()$sampleID,
+    data()$geneN)
+        #data()$normalized,
+        #data()$unnorm_boxplot,
+        #data()$norm_boxplot)
 })
 verbatimTextOutput('test3')
 ```

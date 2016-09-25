@@ -11,73 +11,86 @@ output:
 
 ```{r setup, include=FALSE}
 library(flexdashboard)
-library(highcharter)
-library(NanoStringNorm)
-library(ggplot2)
-library(reshape2)
 library(shiny)
-library(shinyjs)
-library(rhandsontable)
 source("util/helpers.R")
 source("util/import_rcc.R")
 options(shiny.maxRequestSize = 9*1024^2) # 9mb limit
 ```
+
+
+Introduction {data-orientation=rows}
+=====================================  
+
+Column
+-------------------------------------
+    
+###  
+    
+```{r introduction}
+h4('Introduction')
+```
+GEO-submitter is an easy to use shiny tool, developed to make submitting gene expression study data easier.
+Application author: [Thomas W. Battaglia](https://github.com/twbattaglia)
+
+    
+###  
+
+```{r}
+```
+
+
 
 Upload {data-orientation=rows}
 =====================================  
 
 Inputs {.sidebar data-width=237}
 -----------------------------------------------------------------------
-```{r introduction}
-h4('Introduction')
-```
-GEO-submitter is an easy to use shiny tool, developed to make submitting gene expression study data easier.
 
 ```{r upload bar}
 # Data Type
-tags$hr()
 h4('Data Type')
-selectInput(inputId = 'data_type', 
-            label = helpText("Help text with eventually go here."), 
-            choices = c('Nanostring', "Microarray"), 
-            selected = "Nanostring", 
+selectInput(inputId = 'dataType', 
+            label = helpText("Select an array platform."), 
+            choices = c("Select", 'Nanostring', "Microarray"), 
             selectize = T)
 tags$hr()
 
 # Input Files
 h4('Upload Files')
 fileInput(inputId = 'upload', 
-          label = helpText("Help text with eventually go here."), 
+          label = helpText("Use 'Shift' to highlight multiple files."), 
           multiple = T,
           accept = c(
-            '.RCC',
             '.rcc',
-            '.rcc.gz'
-            )
+            '.rcc.gz', 
+            '.cel',
+            '.cel.gz')
       )
 tags$hr()
 
 # Normalization method
-h4('Normalization Method')
-selectInput(inputId = "normalization", 
-            label = helpText("Help text with eventually go here."), 
-            choices = c("Housekeeping-Sum" = "housekeeping.sum",
-                        "Housekeeping-Mean" = "housekeeping.geo.mean", 
-                        "DESeq2" = "deseq2"), 
-            selectize = T)
-actionButton("norm", "More Info", width = "100px")
-tags$hr()
+conditionalPanel(condition = "input.dataType == 'Nanostring'",
+                 h4('Normalization Method'),
+                 selectInput(inputId = "normalization", 
+                             label = helpText("Help text with eventually go here."), 
+                             choices = c("Housekeeping-Sum" = "housekeeping.sum",
+                                         "Housekeeping-Mean" = "housekeeping.geo.mean", 
+                                         "DESeq2" = "deseq2"), 
+                             selectize = T),
+                 tags$hr()
+)
 
-# Norm modal for more info
-observeEvent(input$norm, {
-  showModal(
-    modalDialog(
-      title = "Normalization Methods",
-      size = "m",
-      "Below are a breakdown of the different methods used for normalizing Nanostring data.",
-      easyClose = TRUE
-    ))
-})
+# Normalization method
+conditionalPanel(condition = "input.dataType == 'Microarray'",
+                 h4('Normalization Method'),
+                 selectInput(inputId = "normalization", 
+                             label = helpText("Help text with eventually go here."), 
+                             choices = c("RMA" = "RMA",
+                                         "MAS5" = "MAS5", 
+                                         "GCRMA" = "GCRMA"), 
+                             selectize = T),
+                 tags$hr()
+)
 ```
 
 ```{r data reactive}
@@ -89,34 +102,92 @@ data <- reactive({
     return(NULL)
   }
   
-  # Fix uploaded names (maybe remove)
-  #fixed <- fixUploadedFilesNames(input$upload)
+  # Conditionals for data source type
+  if(input$dataType == "Nanostring"){
+    
+    # Import RCC files and convert to table/metadata
+    data <- import_rcc2(input$upload$datapath)
+    
+    # number of genes
+    geneN <- nrow(data$x)
   
-  # Import RCC files and convert to table/metadata
-  data <- import_rcc2(input$upload$datapath)
+    # number the samples
+    sampleN <- ncol(data$x)-3
   
-  # Find number of genes
-  sampleGene <- nrow(data$x)
+    # sample ID's
+    sampleID <- colnames(data$header)
+    
+    # Normalized data
+    if(input$normalization != "deseq2"){
+      normalized <- NanoStringNorm(
+        x = data$x,
+        anno = NA,
+        CodeCount = 'sum',
+        Background = 'mean',
+        SampleContent = input$normalization,
+        round.values = FALSE,
+        take.log = FALSE,
+        return.matrix.of.endogenous.probes = TRUE
+      )
+    }
+    
+    # Show progress message
+    showNotification("Data processed...", type = "message")
+    
+    # Return a list og genes and metadata
+    return(
+      list(
+        genes = data$x, 
+        metadata = data$header,
+        sampleN = sampleN,
+        sampleID = sampleID,
+        geneN = geneN,
+        normalized = normalized)
+    )
+    
+  }else if(input$dataType == "Microarray"){
+    
+    # Load data with affy package
+    ab <- ReadAffy(filenames = input$upload$datapath, compress = T, sampleNames = input$upload$name)
+    
+    # sample N
+    sampleN <- length(pData(ab)$sample)
+    
+    # sampleID
+    
+    # Normalize based on 
+    if (input$normalization == "RMA"){
+      showNotification("Normalizing Data...", type = "warning")
+      normalized <- rma(ab)
+      geneN <- nrow(normalized@featureData@data)
+      
+    } else if (input$normalization == "MAS5"){
+      showNotification("Normalizing Data...", type = "warning")
+      normalized <- mas5(ab)
+      geneN <- nrow(normalized@featureData@data)
+      
+    } else if (input$normalization == "GCRMA"){
+      showNotification("Normalizing Data...", type = "warning")
+      normalized <- gcrma(ab)
+      geneN <- nrow(normalized@featureData@data)
+    }
+    
+    # Return a list og genes and metadata
+    return(
+      list(
+        genes = data$x, 
+        sampleN = sampleN,
+        sampleID = sampleID,
+        geneN = geneN,
+        normalized = normalized)
+    )
+    
+    # Show progress message
+    showNotification("Files processed...", type = "message")
+  } 
   
-  # Find the number the samples
-  sampleN <- ncol(data$x)-3
-  
-  # Find sample ID's
-  sampleID <- colnames(data$header)
-  
-  # Show progress message
-  showNotification("Files processed...", type = "message")
-  
-  # Return a list og genes and metadata
-  return(list(genes = data$x, 
-              metadata = data$header,
-              sampleN = sampleN,
-              sampleID = sampleID,
-              sampleGene = sampleGene))
 })
 ```
-
-Application author: [Thomas W. Battaglia](https://github.com/twbattaglia)
 
 
 Row
@@ -131,8 +202,7 @@ output$geneNumber <- renderValueBox({
   if(is.null(data())){
     return(valueBox(0, caption = "Number of genes", icon = "fa-cubes"))
   }
-  geneN <- nrow(data()$genes)
-  valueBox(geneN,caption = "Number of genes", icon = "fa-cubes")
+  valueBox(data()$geneN, caption = "Number of genes", icon = "fa-cubes")
 })
 valueBoxOutput(outputId = "geneNumber")
 ```
@@ -147,8 +217,7 @@ output$sampleNumber <- renderValueBox({
     return(valueBox(0, caption = "Number of samples", icon = "fa-users"))
   }
   
-  sampleN <- ncol(data()$metadata)
-  valueBox(sampleN, caption = "Number of samples", icon = "fa-users")
+  valueBox(data()$sampleN, caption = "Number of samples", icon = "fa-users")
 })
 valueBoxOutput(outputId = "sampleNumber")
 ```
@@ -198,20 +267,8 @@ output$normalized <- renderHighchart({
   # Convert to long format for high charts
   showNotification("Plotting normalized values...", type = "message")
   
-  # Nanostring normalize
-  nsn <- NanoStringNorm::NanoStringNorm(
-    x = data()$genes,
-    anno = NA,
-    CodeCount = 'sum',
-    Background = 'mean',
-    SampleContent = input$normalization,
-    round.values = FALSE,
-    take.log = FALSE,
-    return.matrix.of.endogenous.probes = TRUE
-  )
-  
   # Convert to long format
-  long_format <- reshape2::melt(nsn, id.vars = c("Name")) 
+  long_format <- reshape2::melt(data()$normalized, id.vars = c("Name")) 
   
   # Plot boxplot over gene abundance values
   highchart() %>% 
@@ -374,33 +431,33 @@ textInput(inputId = "pubmed",
 ```{r protocols}
 h4("Extraction Protocol")
 textareaInput(inputId = "extraction", 
-          label = "Describe the protocol used to isolate the extract material. You can include as much text as you need to thoroughly describe the protocol; it is strongly recommended that complete protocol descriptions are provided within your submission.", 
-          value = "TRIzol (Invitrogen) followed by RNeasy column cleanup (Qiagen) using the manufacturers protocols", 
-          placeholder = "Enter text...")
+              label = "Describe the protocol used to isolate the extract material. You can include as much text as you need to thoroughly describe the protocol.", 
+              value = "TRIzol (Invitrogen) followed by RNeasy column cleanup (Qiagen) using the manufacturers protocols", 
+              placeholder = "Enter text...")
 
 h4("Labeling Protocol")
 textareaInput(inputId = "labeling", 
-          label = "Describe the protocol used to label the extract. You can include as much text as you need to thoroughly describe the protocol.", 
-          value = "", 
-          placeholder = "Enter text...")
+              label = "Describe the protocol used to label the extract. You can include as much text as you need to thoroughly describe the protocol.", 
+              value = "", 
+              placeholder = "Enter text...")
 
 h4("Hybridization Protocol")
 textareaInput(inputId = "hybridization", 
-          label = "Describe the protocols used for hybridization, blocking and washing, and any post-processing steps such as staining. You can include as much text as you need to thoroughly describe the protocol.", 
-          value = "", 
-          placeholder = "Enter text...")
+              label = "Describe the protocols used for hybridization, blocking and washing, and any post-processing steps such as staining.", 
+              value = "", 
+              placeholder = "Enter text...")
 
 h4("Scanning Protocol")
 textareaInput(inputId = "scanning", 
-          label = "Describe the scanning and image acquisition protocols, hardware, and software. You can include as much text as you need to thoroughly describe the protocol.", 
-          value = "", 
-          placeholder = "Enter text...")
+              label = "Describe the scanning and image acquisition protocols, hardware, and software. You can include as much text as you need to thoroughly describe the protocol.", 
+              value = "", 
+              placeholder = "Enter text...")
 
 h4("Data Processing Protocol")
 textareaInput(inputId = "data_processing", 
-          label = "Provide details of how data in the VALUE column of your table were generated and calculated, i.e., normalization method, data selection procedures and parameters, transformation algorithm (e.g., MAS5.0), and scaling parameters. You can include as much text as you need to thoroughly describe the processing procedures.", 
-          value = "", 
-          placeholder = "Enter text...")
+              label = "Provide details of how data in the VALUE column of your table were generated and calculated, i.e., normalization method, data selection procedures and parameters, transformation algorithm (e.g., MAS5.0), and scaling parameters. You can include as much text as you need to thoroughly describe the processing procedures.", 
+              value = "", 
+              placeholder = "Enter text...")
 ```
 
 
@@ -495,8 +552,7 @@ h4("Choose characteristics")
 selectizeInput(inputId = "sampleChar", 
                label = helpText("Fusce ultrices malesuada purus, quis vehicula quam. Nulla facilisi. Phasellus pulvinar lacus id ante scelerisque eleifend."), 
             choices = c("dose", "time", "tissue", "strain", "gender", "cell line", "development stage", "age", "agent", "cell type", "infection", "isolate", "metabolism", "shock", "stress", "temperature", "specimen", "disease state", "protocol", "growth protocol", "genotype/variation", "species", "individual"), 
-            options = list(create = TRUE, 
-                           placeholder = 'Select variables...'),
+            options = list(create = TRUE, placeholder = 'Select variables...'),
             multiple = TRUE)
 ```
 
@@ -523,10 +579,9 @@ output$hot = renderRHandsontable({
                    Description = character(N))
   
   # aggregate columns
-  #cols <- c("col1", "col2")
   cols <- input$sampleChar
   
-  # Dynamticlaly add new columns
+  # Dynamticlaly add new columns to df
   for(i in cols){
     df[i] <- character(N)
   }
@@ -628,18 +683,6 @@ output$downloadData <- downloadHandler(
       write_append(paste0("!Series_contributor = ", i), filename = file)
     }
     
-    # Nanostring normalize
-    nsn <- NanoStringNorm::NanoStringNorm(
-      x = data()$genes,
-      anno = NA,
-      CodeCount = 'sum',
-      Background = 'mean',
-      SampleContent = input$normalization,
-      round.values = FALSE,
-      take.log = FALSE,
-      return.matrix.of.endogenous.probes = TRUE
-    )
-    
     # Sample information
     sampleInfo <- hot_to_r(input$hot)
   # sampleInfo <- sampleInfo[!is.null(sampleInfo$SampleID), ] # Temporary fix to remove NA rows (Issue #2)
@@ -691,7 +734,7 @@ output$downloadData <- downloadHandler(
       write_append(paste0("!Sample_data_processing", " = ", isolate(reactive$data_processing)), filename = file)
       
       # Subset the expression values
-      nsn_sub <- subset(nsn, select = i)
+      nsn_sub <- subset(data()$normalized, select = i)
       
       # Iterate over each row and write the expression values
       write_append("#ID_REF =", filename = file)
@@ -709,7 +752,6 @@ output$downloadData <- downloadHandler(
     }
 })
 ```
-
 
 
 

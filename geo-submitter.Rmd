@@ -430,7 +430,7 @@ reactive$authorDF <- data.frame(First = "",
 observeEvent(input$addAuthor, {
   
   # Require first and last names
-  if(is.na(input$firstName) | is.na(input$lastName)){
+  if(input$firstName == "" | input$lastName == ""){
     showNotification("Error Adding Author...", type = "error")
   }
   

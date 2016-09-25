@@ -17,6 +17,7 @@ library(ggplot2)
 library(reshape2)
 library(shiny)
 library(shinyjs)
+library(rhandsontable)
 source("util/helpers.R")
 source("util/import_rcc.R")
 options(shiny.maxRequestSize = 9*1024^2) # 9mb limit
@@ -153,7 +154,7 @@ valueBoxOutput(outputId = "sampleNumber")
 Row 
 -------------------------------------
    
-### Raw
+###  
 
 ```{r raw_boxplot}
 output$unnormalized <- renderHighchart({
@@ -181,12 +182,11 @@ output$unnormalized <- renderHighchart({
 highchartOutput("unnormalized")
 ``` 
 
+###  
 
-
-### Normalized
-
-```{r norm_boxplot}
+```{r raw_boxplot2}
 output$normalized <- renderHighchart({
+  
   # Err if NULL
   if(is.null(input$upload)){
     return(NULL)
@@ -220,7 +220,9 @@ output$normalized <- renderHighchart({
     hc_yAxis(title = list(text = "Log10 gene abundances"))
 })
 highchartOutput("normalized")
-```
+``` 
+
+
 
 
 
@@ -436,17 +438,8 @@ Column {data-width=300}
 h4("Choose characteristics")
 selectizeInput(inputId = "sampleChar", label = helpText("Fusce ultrices malesuada purus, quis vehicula quam. Nulla facilisi. Phasellus pulvinar lacus id ante scelerisque eleifend."), 
             choices = c("dose", "time", "tissue", "strain", "gender", "cell line", "development stage", "age", "agent", "cell type", "infection", "isolate", "metabolism", "shock", "stress", "temperature", "specimen", "disease state", "protocol", "growth protocol", "genotype/variation", "species", "individual"), 
-            options = list(create = TRUE),
+            options = list(create = TRUE, placeholder = 'Select...'),
             multiple = TRUE)
-
-# Condition if other is selected
-#conditionalPanel(condition = "input.sampleChar == 'other'",
-#                 textInput(inputId = "other", 
-#                           value = "", 
-#                           label = h5("Other variable name"))
-#                 )
-#tags$hr()
-
 ```
 
 
@@ -456,8 +449,42 @@ Column
 ### Chart 2
     
 ```{r sample select}
+output$hot = renderRHandsontable({
+  
+  # Err if null
+  if(is.null(data())){
+    return()
+  }
+  
+  # Create new table with row.names as sampe id's
+  df <- data.frame(SampleID = data()$sampleID)
+  
+  # aggregate columns
+  #cols <- c("col1", "col2")
+  cols <- input$sampleChar
+  
+  # Dynamticlaly add new columns
+  for(i in cols){
+    df[i] <- as.character()
+  }
+  
+  # Generate handsome table
+  rht <- rhandsontable(df, stretchH = "all", rowHeaders = NULL) %>%
+    hot_col("SampleID", readOnly = TRUE)
+  
+  # Make all colums factorable
+  for(i in cols){
+    rht <- rht %>%
+      hot_col(i, "dropdown", copyable = T, highlightRow = TRUE)
+  }
+  
+  # Return table
+  rht
+  
+})
 
-
+# Output Hot table
+rHandsontableOutput("hot")
 ```
 
 
@@ -490,7 +517,7 @@ verbatimTextOutput('test1')
     
 ```{r}
 output$test2 <- renderPrint({ 
-  data()$sampleID 
+  hot_to_r(input$hot)
 })
 verbatimTextOutput('test2')
 ``` 

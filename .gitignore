@@ -9,3 +9,4 @@ old/*
 test_data/*
 test.R
 snippets.R
+util/nano2soft.R

@@ -15,7 +15,7 @@ library(shiny)
 source("util/helpers.R")
 source("util/import_rcc.R")
 options(shiny.maxRequestSize = 9*1024^2) # 9mb limit
-tags$head(tags$script(src = "js/ga.js")) # google analystics
+tags$head(tags$script(src = "www/js/ga.js")) # google analystics
 ```
 
 
@@ -640,64 +640,37 @@ Review & Export
 
 Inputs {.sidebar data-width=267}
 -----------------------------------------------------------------------
-The tool will export a Simple Omnibus Format in Text (SOFT) file, which will include all relavent information for a Minimum Information About a Microarray Experiment (MIAME) compliant experiment.
-
 ```{r}
-downloadLink(outputId = 'downloadData', label = 'Download')
+h4("Help text")
 ```
 
-Row
+   
+Column {.tabset .tabset-fade data-width=700}
 -------------------------------------
-    
-### Author
-    
+   
+### Experiemental data
+
 ```{r}
-output$test1 <- renderPrint({ 
-  reactive$name
-})
-verbatimTextOutput('test1')
-```
+```   
  
-### Chart 2
-    
+### Sample data
 ```{r}
-output$test2 <- renderPrint({ 
-  if(is.null(input$hot)){
-   return("invalid")
-  }
-  hot_to_r(input$hot)
-})
-verbatimTextOutput('test2')
-``` 
 
-Row
+```
+
+
+
+Column {data-width=300}
 -------------------------------------
     
-### Chart 3
-    
-```{r}
-output$test3 <- renderPrint({ 
-  if(is.null(data())){
-    return()
-  }
-  c(data()$sampleN,
-    data()$sampleID,
-    data()$geneN)
-        #data()$normalized,
-        #data()$unnorm_boxplot,
-        #data()$norm_boxplot)
-})
-verbatimTextOutput('test3')
-```
-    
-### Export
+### Export SOFT File
+Once the experimental and sample metadata are valid, export all information as a SOFT file. This SOFT file will be required for data submission on GEO's SOFT submission website.
 
 ```{r}
+downloadLink('downloadData', 'Export SOFT file')
 output$downloadData <- downloadHandler(
-  filename = function() { 
-    paste("soft", '.txt', sep = '') 
-  },
-  
+  contentType = "text/txt",
+  filename = "soft.txt",
   content = function(file) {
     
     # Write series information
@@ -784,6 +757,8 @@ output$downloadData <- downloadHandler(
     }
 })
 ```
+
+
 
 
 

@@ -233,7 +233,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo bibendum im
 
 ```{r save experiment}
 # Save experiemental information
-actionButton(inputId = "saveExp", icon = icon("fa-list"), label = "Save Experiment", width = "215px")
+actionButton(inputId = "saveExp", icon = icon("fa-list"), label = "Save", width = "215px")
 
 # Store all reactive data assocaited with Series information
 reactive <- reactiveValues()
@@ -271,7 +271,7 @@ Column {.tabset .tabset-fade}
 
 ### Experimental 
     
-```{r experimental info 1}
+```{r experimental}
 h4("Name")
 textInput(inputId = "name", 
           label = "Provide an identifier for this entity. This identifier is used only as an internal reference within a given file. The identifier will not appear on final GEO records.", 
@@ -301,18 +301,11 @@ textareaInput(inputId = "design",
           label = "Provide a description of the experimental design. Indicate how many Samples are analyzed, if replicates are included, are there control and/or reference Samples", 
           value = "", 
           placeholder = "Enter text...")
-
-
-h4("Extraction Protocol")
-textareaInput(inputId = "extraction", 
-          label = "How samples were extracted", 
-          value = "", 
-          placeholder = "Enter text...")
 ```
    
 ### Platform 
 
-```{r experimental info 2}
+```{r platform}
 h4("Organism")
 textInput(inputId = "organism", 
           label = "Identify the organism(s) from which the biological material was derived. See http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/", 
@@ -356,6 +349,42 @@ textInput(inputId = "pubmed",
           width = "400px",
           placeholder = "12345678")
 ```     
+
+
+### Protocols 
+
+```{r protocols}
+h4("Extraction Protocol")
+textareaInput(inputId = "extraction", 
+          label = "Describe the protocol used to isolate the extract material. You can include as much text as you need to thoroughly describe the protocol; it is strongly recommended that complete protocol descriptions are provided within your submission.", 
+          value = "TRIzol (Invitrogen) followed by RNeasy column cleanup (Qiagen) using the manufacturers protocols", 
+          placeholder = "Enter text...")
+
+h4("Labeling Protocol")
+textareaInput(inputId = "labeling", 
+          label = "Describe the protocol used to label the extract. You can include as much text as you need to thoroughly describe the protocol.", 
+          value = "", 
+          placeholder = "Enter text...")
+
+h4("Hybridization Protocol")
+textareaInput(inputId = "hybridization", 
+          label = "Describe the protocols used for hybridization, blocking and washing, and any post-processing steps such as staining. You can include as much text as you need to thoroughly describe the protocol.", 
+          value = "", 
+          placeholder = "Enter text...")
+
+h4("Scanning Protocol")
+textareaInput(inputId = "scanning", 
+          label = "Describe the scanning and image acquisition protocols, hardware, and software. You can include as much text as you need to thoroughly describe the protocol.", 
+          value = "", 
+          placeholder = "Enter text...")
+
+h4("Data Processing Protocol")
+textareaInput(inputId = "data_processing", 
+          label = "Provide details of how data in the VALUE column of your table were generated and calculated, i.e., normalization method, data selection procedures and parameters, transformation algorithm (e.g., MAS5.0), and scaling parameters. You can include as much text as you need to thoroughly describe the processing procedures.", 
+          value = "", 
+          placeholder = "Enter text...")
+```
+
 
 ### Authors
     
@@ -423,11 +452,19 @@ Sample data
 Inputs {.sidebar data-width=237}
 -----------------------------------------------------------------------
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo bibendum imperdiet. Pellentesque pharetra hendrerit feugiat. Fusce ultrices malesuada purus, quis vehicula quam. Nulla facilisi. Phasellus pulvinar lacus id ante scelerisque eleifend. 
+```{r save sample}
+# Save sample information
+actionButton(inputId = "saveSample", icon = icon("fa-list"), label = "Save", width = "215px")
+observeEvent(input$saveSample, {
+  showNotification("Saving data...", type = "message")
+})
+```
+
 
 Column {data-width=300}
 -------------------------------------
     
-### Characteristics Selection
+### Selection
     
 ```{r sample characteristic}
 h4("Choose characteristics")
@@ -503,7 +540,6 @@ The tool will export a Simple Omnibus Format in Text (SOFT) file, which will inc
 
 ```{r}
 downloadLink(outputId = 'downloadData', label = 'Download')
-
 ```
 
 Row
@@ -513,7 +549,7 @@ Row
     
 ```{r}
 output$test1 <- renderPrint({ 
-  input$sampleChar
+  reactive$name
 })
 verbatimTextOutput('test1')
 ```
@@ -600,7 +636,6 @@ output$downloadData <- downloadHandler(
          write_append(paste0("!Sample_characteristics_ch1", " = ", x, " : ", sub[ ,x]), filename = file)
       })
       
-
       # Write !Sample_Description
       write_append(paste0("!Sample_Description", " = ", sampleInfo$Description[i]), filename = file)
       

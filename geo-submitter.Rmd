@@ -163,8 +163,8 @@ data <- reactive({
     # Load data with affy package
     ab <- ReadAffy(filenames = input$upload$datapath, compress = T, sampleNames = input$upload$name)
     
-    # Un normalized data for boxplot
-    unnorm_boxplot <- melt(pm(ab), id.vars = c("Name"), varnames = c("gene", "variable")) 
+    # Un normalized data for boxplot. Temporary speed fix. first 100,000 probe values
+    unnorm_boxplot <- melt(pm(ab), id.vars = c("Name"), varnames = c("gene", "variable"))[1:100000,]
 
     # sample N
     sampleN <- length(pData(ab)$sample)

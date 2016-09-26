@@ -19,24 +19,71 @@ tags$head(tags$script(src = "www/js/ga.js")) # google analystics
 ```
 
 
-Introduction {data-orientation=rows}
+Introduction {data-orientation=columns}
 =====================================  
 
-Column
+
+Column {data-width=700}
 -------------------------------------
     
-### Introduction
+### Introduction {data-height=250}
     
-```{r introduction}
-h4('Introduction')
+```{r}
+p('Currently there does not exist an easy-to-use interface for submitting array data to Gene Expression Omnibus (GEO), through NCBI. This difficulty can lead to the inability to properly submit studes and adhere to the', a('Minimum information about a microarray experiment (MAIME).', href = "http://www.ncbi.nlm.nih.gov/geo/info/MIAME.html"), 'GEO-submiter is meant to remedy this issue by creating a web-based tool to help researchers submit their gene expression array studies to GEO by using the, ', a("Simple Omnibus Format in Text (SOFT).", href = 'http://www.ncbi.nlm.nih.gov/geo/info/soft.html'), 'The SOFT file format allows a researcher to include all experiemental protocols, information and gene expression data in one file. After filling in all required information found within this tool, a SOFT text file will be generated, which can be submitted along with the raw data to GEO as a single submission.' )
+
+tags$b("This is still a work-in-progress and a proof-of-concept, so do not use it for anything important!")
+
 ```
-GEO-submitter is an easy to use shiny tool, developed to make submitting gene expression study data easier.
-Application author: [Thomas W. Battaglia](https://github.com/twbattaglia)
+
+### Normalization methods 
+    
+```{r}
+p('GEO submission require the SOFT file to include normalized expression values for each of the genes for every sample within an array. GEO-submitter makes it easier to generate the normalized values using a multitude of R-packages. After importing the raw data, you can select the many different techniques for normalizing your microarray or nanostring data. Below is a breakdown of the different normalization techniques currently supported by GEO-submitter.')
+
+h4("Microarray Normalization")
+p("Robust Multi-array Average (RMA)", a("Paper", href = "http://www.ncbi.nlm.nih.gov/pubmed/12925520"))
+p("(MAS5)", a("Paper", href = "http://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-8-273"))
+p("(GCRMA)", a("Bioconductor", href = "https://www.bioconductor.org/packages/release/bioc/html/gcrma.html"))
+
+tags$hr()
+
+h4("Nanostring Normalization")
+p("NanoStringNorm-Sum (housekeeping.sum)")
+p("NanoStringNorm-Mean (housekeeping.geo.mean)")
+```
+
+
+Column {data-width=300}
+-------------------------------------
 
     
-### Normalization Methods
+### Credits & citations
 
 ```{r}
+p("Below are a list of the packages and databases which were used or influenced the creation GEO-submitter. See the source code for a more detailed listing of the packages used.")
+tags$hr()
+h5("Shiny:", a("Github, ", href = 'https://github.com/rstudio/shiny'), a("Website", href = 'http://shiny.rstudio.com/'))
+tags$hr()
+h5("Flexdashboard:", a("Github, ", href = 'https://github.com/rstudio/flexdashboard'), a("Website", href = 'http://rmarkdown.rstudio.com/flexdashboard/index.html'))
+tags$hr()
+h5("NanoStringNorm:", a("Paper, ", href = 'http://www.ncbi.nlm.nih.gov/pubmed/22513995'), a("CRAN", href = 'https://cran.r-project.org/web/packages/NanoStringNorm/index.html'))
+tags$hr()
+h5("GEOsubmission:", a("Bioconductor", href = 'http://www.bioconductor.org/packages//release/bioc/html/GEOsubmission.html'))
+tags$hr()
+h5("highcharter:", a("Github", href = 'http://www.ncbi.nlm.nih.gov/pubmed/11726920'))
+tags$hr()
+h5("rhandsontable:", a("Github", href = 'https://github.com/jrowen/rhandsontable'))
+tags$hr()
+h5("GEO:", a("Website", href = 'http://www.ncbi.nlm.nih.gov/geo/'))
+tags$hr()
+h5("MAIME:", a("Paper", href = 'http://www.ncbi.nlm.nih.gov/pubmed/11726920'))
+tags$hr()
+h5("Bootstrap3:", a("Github", href = 'https://github.com/twbs/bootstrap'))
+tags$hr()
+h5("affy:", a("Bioconductor", href = 'https://bioconductor.org/packages/release/bioc/html/affy.html'))
+tags$hr()
+h5('Application author', a('Thomas W. Battaglia', href = 'https://github.com/twbattaglia'))
+
 ```
 
 
@@ -44,7 +91,7 @@ Application author: [Thomas W. Battaglia](https://github.com/twbattaglia)
 Upload {data-orientation=rows}
 =====================================  
 
-Inputs {.sidebar data-width=267}
+Inputs {.sidebar data-width=268}
 -----------------------------------------------------------------------
 
 ```{r upload bar}
@@ -77,8 +124,7 @@ conditionalPanel(condition = "input.dataType == 'Nanostring'",
                  selectInput(inputId = "normalizationNS", 
                              label = helpText("Select a normalization method"), 
                              choices = c("Housekeeping-Sum" = "housekeeping.sum",
-                                         "Housekeeping-Mean" = "housekeeping.geo.mean", 
-                                         "DESeq2" = "deseq2"), 
+                                         "Housekeeping-Mean" = "housekeeping.geo.mean"), 
                              selectize = T),
                  tags$hr()
 )
@@ -307,11 +353,14 @@ highchartOutput("normalized")
 Experimental setup
 ===================================== 
 
-Inputs {.sidebar data-width=267}
+Inputs {.sidebar data-width=268}
 -----------------------------------------------------------------------
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo bibendum imperdiet. Pellentesque pharetra hendrerit feugiat. Fusce ultrices malesuada purus, quis vehicula quam. Nulla facilisi. Phasellus pulvinar lacus id ante scelerisque eleifend. 
 
 ```{r save experiment}
+h4("Help")
+p("This section is the heart of", tags$b('GEO-submitter '), "and should be filled completely and as detailed as possible. The information stored here is meant for researchers to understand how the experiemental design as well as the platform and protocols used during sample extraction and treatment.")
+p("When you have filled out the entries completly, save the information using the button below.")
+
 # Save experiemental information
 actionButton(inputId = "saveExp", icon = icon("floppy-o"), label = "Save", width = "215px")
 
@@ -382,6 +431,8 @@ textareaInput(inputId = "summary",
           label = "Summarize the goals and objectives of this study. The abstract from the associated publication may be suitable. You can include as much text as you need to thoroughly describe the study.", 
           value = "", 
           placeholder = "Enter text...")
+
+tags$hr()
 
 h4("Design")
 textareaInput(inputId = "design", 
@@ -554,11 +605,15 @@ tableOutput("author_table")
 Sample data
 =====================================
 
-Inputs {.sidebar data-width=267}
+Inputs {.sidebar data-width=268}
 -----------------------------------------------------------------------
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo bibendum imperdiet. Pellentesque pharetra hendrerit feugiat. Fusce ultrices malesuada purus, quis vehicula quam. Nulla facilisi. Phasellus pulvinar lacus id ante scelerisque eleifend. 
 
 ```{r save sample}
+h4("Help")
+p("This section is meant to give important information about each sample. Choose multiple inputs from the selection box, or type out you own if it is not listed. If information is not available for a particular sample, enter ", tags$b('Not applicable. '))
+p("When you have filled out the entries completly, save the information using the button below.")
+
+
 # Save sample information
 actionButton(inputId = "saveSample", icon = icon("floppy-o"), label = "Save", width = "215px")
 observeEvent(input$saveSample, {
@@ -575,9 +630,9 @@ Column {data-width=300}
 ```{r sample characteristic}
 h4("Choose characteristics")
 selectizeInput(inputId = "sampleChar", 
-               label = helpText("Fusce ultrices malesuada purus, quis vehicula quam. Nulla facilisi. Phasellus pulvinar lacus id ante scelerisque eleifend."), 
+               label = helpText("Select or enter the variables which best describe your samples."), 
             choices = c("dose", "time", "tissue", "strain", "gender", "cell line", "development stage", "age", "agent", "cell type", "infection", "isolate", "metabolism", "shock", "stress", "temperature", "specimen", "disease state", "protocol", "growth protocol", "genotype/variation", "species", "individual"), 
-            options = list(create = TRUE, placeholder = 'Select variables...'),
+            options = list(create = TRUE, placeholder = 'Select variables...     '),
             multiple = TRUE)
 ```
 
@@ -621,7 +676,7 @@ output$hot = renderRHandsontable({
   # Make all colums factorable
   for(i in cols){
     rht <- rht %>%
-      hot_col(i, "autocomplete", copyable = T, highlightRow = F, strict = T)
+      hot_col(i, "autocomplete", copyable = T, highlightRow = F, strict = T, default = "Not applicable")
   }
   
   # Return table
@@ -641,21 +696,48 @@ Review & Export
 Inputs {.sidebar data-width=267}
 -----------------------------------------------------------------------
 ```{r}
-h4("Help text")
+h4("Help")
+p("Once you have filled out all the experimental and sample information, you can export your data as a SOFT file. Review the", tags$b("Experimental data"), "and", tags$b("Sample data"), "tables to be sure the information you have inputed is correct. Once the data is correct, select the export file option on the right hand-side.")
 ```
 
    
 Column {.tabset .tabset-fade data-width=700}
 -------------------------------------
    
-### Experiemental data
+### Experimental data
 
 ```{r}
+output$expReview <- renderTable(rownames = F, 
+                                hover = T, {
+  
+  # Err if null
+  if(is.null(data())){
+    return()
+  }
+  
+  x <- reactiveValuesToList(reactive)
+  df <- t(as.data.frame(x))
+  out <- data.frame(Variable = row.names(df), Values = df[,1])
+  out_filter <- subset(out, !(Variable %in% c("authorDF.First", "authorDF.Middle", "authorDF.Last")))
+  out_filter
+})
+tableOutput('expReview')
+
 ```   
  
 ### Sample data
 ```{r}
+output$sampleReview <- renderTable(hover = T, {
+  
+  # Err if null
+  if(is.null(data())){
+    return()
+  }
+  hot_to_r(input$hot)
+  }, 
+  include.rownames = F)
 
+tableOutput('sampleReview')
 ```
 
 
@@ -691,7 +773,7 @@ output$downloadData <- downloadHandler(
     
     # Sample information
     sampleInfo <- hot_to_r(input$hot)
-  # sampleInfo <- sampleInfo[!is.null(sampleInfo$SampleID), ] # Temporary fix to remove NA rows (Issue #2)
+    #sampleInfo <- sampleInfo[!is.null(sampleInfo$SampleID), ] # Temporary fix to remove NA rows (Issue #2)
     for (i in 1:nrow(sampleInfo)){
       # Write ^SAMPLE
       write_append(paste0("^SAMPLE", " = ", sampleInfo$ID[i]), filename = file)

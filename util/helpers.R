@@ -1,3 +1,7 @@
+# @ Thomas W. Battaglia
+# Helper functions for geo-submitter
+
+# Load additional libraries
 library(shinyjs)
 library(knitr)
 library(dplyr)

@@ -12,3 +12,9 @@ snippets.R
 util/nano2soft.R
 
 README.html
+
+*.DS_Store
+
+.DS_Store
+
+.DS_Store

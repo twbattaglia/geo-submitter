@@ -738,17 +738,14 @@ observeEvent(input$authorRemove, {
       authorTableSub <- subset(authorTable, First != as.character(split[[1]][1]) & Middle != as.character(split[[1]][3]) & Last != as.character(split[[1]][3]))
       isolate(reactive$authorDF <- authorTableSub)
 
-
       # Remove any entries from the reactive authors list
       reactive$authorList <- isolate(reactive$authorList[!reactive$authorList %in% x])
-      #message(paste0("removed ", x, " from reactive list."))
     }
   })
   
 })
 
 ```
-
 
 
 Sample data
@@ -762,6 +759,7 @@ h4("Help")
 p("This section is meant to give important information about each sample. Choose multiple inputs from the selection box, or type out you own if it is not listed. If information is not available for a particular sample, enter ", tags$b('Not applicable. '))
 p("When you have filled out the entries completly, save the information using the button below.")
 
+tags$hr()
 
 # Save sample information
 actionButton(inputId = "saveSample", icon = icon("floppy-o"), label = "Save", width = "215px")
@@ -865,10 +863,10 @@ Column {.tabset .tabset-fade data-width=600}
 output$expReview <- renderTable(hover = T, 
                                 rownames = F,
                                 bordered = T, {
-  # Err if null                                
-  if(is.null(reactive)){
-    return()
-  }
+  # Err if null
+  validate(
+    need(expr = is.null(reactive), message = "Please enter experimental data")
+  )
                                   
   x <- reactiveValuesToList(reactive)
   x$authorDF <- NULL
@@ -885,14 +883,15 @@ output$sampleReview <- renderTable(
   hover = T, 
   bordered = T,
   rownames = F, {
+    
+  # Err if null
+  validate(
+    need(expr = is.null(input$sampleChar), message = "Please upload files...")
+  )
   
-    # Err if null
-    if(is.null(data())){
-      return()
-    }
-    df <- hot_to_r(input$hot)
-    na.omit(df)
-  })
+  df <- hot_to_r(input$hot)
+  na.omit(df)
+})
 tableOutput('sampleReview')
 ```
 
@@ -902,29 +901,27 @@ Column {data-width=400}
     
 ### Prepare and submit all data to GEO 
 ```{r}
-p("After sucessfully generating a SOFT file, the next step is to prepare the raw data and SOFT file for GEO submission. Once complete, go to the", a("GEO-SOFT submission page", href = "http://www.ncbi.nlm.nih.gov/geo/submission/depslip.cgi", target="_blank"), " and choose the", tags$b("Submit"), " button to start a new submission.")
+p("After sucessfully generating a SOFT file, the next step is to prepare the raw data and SOFT file for GEO submission.")
 
 h5("Step 1. Place raw files and SOFT file into a single folder")
-img(src = "www/folder_setup.png", width = NULL)
+img(src = "www/img/folder_setup.png", width = NULL)
 
 tags$hr()
 
 h5("Step 2. Compress folder with raw data")
-img(src = "www/compress_folder.png", width = NULL)
+img(src = "www/img/compress_folder.png", width = NULL)
 
 tags$hr()
 
 h5("Step 3. Final folder")
-img(src = "www/final_folder.png", width = NULL)
+img(src = "www/img/final_folder.png", width = NULL)
 
 tags$hr()
 
-h5("Step 4. Submit data")
-p("Go to", a("GEO-SOFT submission page", href = "http://www.ncbi.nlm.nih.gov/geo/submission/depslip.cgi", target="_blank"))
-img(src = "www/placeholder.png", width = NULL)
-
+h5("Step 4. Submit data to GEO")
+p("Go to", a("GEO-SOFT submission page", href = "http://www.ncbi.nlm.nih.gov/geo/submission/depslip.cgi", target="_blank"), "and login to NCBI. Select SOFT file format and upload compressed archive. There has been known issues with the compressed file format on macOS. If you receive these errors, please contact GEO at", a("geo@ncbi.nlm.nih.gov", href = "geo@ncbi.nlm.nih.gov"))
+img(src = "www/img/geo_submit.png", width = NULL)
 ```
-
 
 
 ```{r export}
@@ -1042,8 +1039,6 @@ output$downloadData <- downloadHandler(
 
 
 
-
-
 <style>
 #sidebar.section.sidebar {
   background-color: white; 
@@ -1062,8 +1057,4 @@ border-color: #d01010;
 .js-irs-0 .irs-single, .js-irs-0 .irs-bar-edge, .js-irs-0 .irs-bar {
 background: #a00;
 }
-
 </style>
-
-
-

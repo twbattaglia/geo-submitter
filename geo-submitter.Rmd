@@ -865,9 +865,9 @@ output$expReview <- renderTable(hover = T,
                                 bordered = T, {
   # Err if null
   validate(
-    need(expr = is.null(reactive), message = "Please enter experimental data")
+    need(expr = input$saveExp > 0, message = "Please add sample characteristics...")
   )
-                                  
+  
   x <- reactiveValuesToList(reactive)
   x$authorDF <- NULL
   x$authorList <- NULL
@@ -886,7 +886,7 @@ output$sampleReview <- renderTable(
     
   # Err if null
   validate(
-    need(expr = is.null(input$sampleChar), message = "Please upload files...")
+    need(expr = input$sampleChar != "", message = "Please add sample characteristics...")
   )
   
   df <- hot_to_r(input$hot)

@@ -15,7 +15,7 @@ library(shiny)
 source("util/helpers.R")
 source("util/import_rcc.R")
 options(shiny.maxRequestSize = 9*1024^2) # 9mb limit
-tags$head(tags$script(src = "www/js/ga.js")) # google analystics
+tags$head(tags$script(src = "www/js/google-analytics.js")) # google analystics
 ```
 
 
@@ -29,7 +29,7 @@ Column {data-width=700}
 ### Introduction {data-height=250}
     
 ```{r introduction}
-p('Currently there does not exist an easy-to-use interface for submitting array data to Gene Expression Omnibus (GEO), through NCBI. This difficulty can lead to the inability to properly submit studes and adhere to the', a('Minimum information about a microarray experiment (MAIME).', href = "http://www.ncbi.nlm.nih.gov/geo/info/MIAME.html"), 'GEO-submiter is meant to remedy this issue by creating a web-based tool to help researchers submit their gene expression array studies to GEO by using the, ', a("Simple Omnibus Format in Text (SOFT).", href = 'http://www.ncbi.nlm.nih.gov/geo/info/soft.html'), 'The SOFT file format allows a researcher to include all experiemental protocols, information and gene expression data in one file. After filling in all required information found within this tool, a SOFT text file will be generated, which can be submitted along with the raw data to GEO as a single submission.' )
+p('Currently there does not exist an easy-to-use interface for submitting array data to Gene Expression Omnibus (GEO), through NCBI. This difficulty can lead to the inability to properly submit studes and adhere to the', a('Minimum information about a microarray experiment (MAIME).', href = "http://www.ncbi.nlm.nih.gov/geo/info/MIAME.html", target="_blank"), 'GEO-submiter is meant to remedy this issue by creating a web-based tool to help researchers submit their gene expression array studies to GEO by using the, ', a("Simple Omnibus Format in Text (SOFT).", href = 'http://www.ncbi.nlm.nih.gov/geo/info/soft.html', target="_blank"), 'The SOFT file format allows a researcher to include all experiemental protocols, information and gene expression data in one file. After filling in all required information found within this tool, a SOFT text file will be generated, which can be submitted along with the raw data to GEO as a single submission.' )
 
 tags$b("This is still a work-in-progress and a proof-of-concept, so do not use it for anything important!")
 
@@ -41,9 +41,9 @@ tags$b("This is still a work-in-progress and a proof-of-concept, so do not use i
 p('GEO submission require the SOFT file to include normalized expression values for each of the genes for every sample within an array. GEO-submitter makes it easier to generate the normalized values using a multitude of R-packages. After importing the raw data, you can select the many different techniques for normalizing your microarray or nanostring data. Below is a breakdown of the different normalization techniques currently supported by GEO-submitter.')
 
 h4("Microarray Normalization")
-p("Robust Multi-array Average (RMA)", a("Paper", href = "http://www.ncbi.nlm.nih.gov/pubmed/12925520"))
-p("(MAS5)", a("Paper", href = "http://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-8-273"))
-p("(GCRMA)", a("Bioconductor", href = "https://www.bioconductor.org/packages/release/bioc/html/gcrma.html"))
+p("Robust Multi-array Average (RMA)", a("Paper", href = "http://www.ncbi.nlm.nih.gov/pubmed/12925520", target="_blank"))
+p("(MAS5)", a("Paper", href = "http://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-8-273", target="_blank"))
+p("(GCRMA)", a("Bioconductor", href = "https://www.bioconductor.org/packages/release/bioc/html/gcrma.html", target="_blank"))
 
 tags$hr()
 
@@ -62,27 +62,27 @@ Column {data-width=300}
 ```{r credits}
 p("Below are a list of the packages and databases which were used or influenced the creation GEO-submitter. See the source code for a more detailed listing of the packages used.")
 tags$hr()
-h5("Shiny:", a("Github, ", href = 'https://github.com/rstudio/shiny'), a("Website", href = 'http://shiny.rstudio.com/'))
+h5("Shiny:", a("Github, ", href = 'https://github.com/rstudio/shiny', target="_blank"), a("Website", href = 'http://shiny.rstudio.com/', target="_blank"))
 tags$hr()
-h5("Flexdashboard:", a("Github, ", href = 'https://github.com/rstudio/flexdashboard'), a("Website", href = 'http://rmarkdown.rstudio.com/flexdashboard/index.html'))
+h5("Flexdashboard:", a("Github, ", href = 'https://github.com/rstudio/flexdashboard', target="_blank"), a("Website", href = 'http://rmarkdown.rstudio.com/flexdashboard/index.html', target="_blank"))
 tags$hr()
-h5("NanoStringNorm:", a("Paper, ", href = 'http://www.ncbi.nlm.nih.gov/pubmed/22513995'), a("CRAN", href = 'https://cran.r-project.org/web/packages/NanoStringNorm/index.html'))
+h5("NanoStringNorm:", a("Paper, ", href = 'http://www.ncbi.nlm.nih.gov/pubmed/22513995', target="_blank"), a("CRAN", href = 'https://cran.r-project.org/web/packages/NanoStringNorm/index.html', target="_blank"))
 tags$hr()
-h5("GEOsubmission:", a("Bioconductor", href = 'http://www.bioconductor.org/packages//release/bioc/html/GEOsubmission.html'))
+h5("GEOsubmission:", a("Bioconductor", href = 'http://www.bioconductor.org/packages//release/bioc/html/GEOsubmission.html', target="_blank"))
 tags$hr()
-h5("highcharter:", a("Github", href = 'http://www.ncbi.nlm.nih.gov/pubmed/11726920'))
+h5("highcharter:", a("Github", href = 'http://www.ncbi.nlm.nih.gov/pubmed/11726920', target="_blank"))
 tags$hr()
-h5("rhandsontable:", a("Github", href = 'https://github.com/jrowen/rhandsontable'))
+h5("rhandsontable:", a("Github", href = 'https://github.com/jrowen/rhandsontable', target="_blank"))
 tags$hr()
-h5("GEO:", a("Website", href = 'http://www.ncbi.nlm.nih.gov/geo/'))
+h5("GEO:", a("Website", href = 'http://www.ncbi.nlm.nih.gov/geo/', target="_blank"))
 tags$hr()
-h5("MAIME:", a("Paper", href = 'http://www.ncbi.nlm.nih.gov/pubmed/11726920'))
+h5("MAIME:", a("Paper", href = 'http://www.ncbi.nlm.nih.gov/pubmed/11726920', target="_blank"))
 tags$hr()
-h5("Bootstrap3:", a("Github", href = 'https://github.com/twbs/bootstrap'))
+h5("Bootstrap3:", a("Github", href = 'https://github.com/twbs/bootstrap', target="_blank"))
 tags$hr()
-h5("affy:", a("Bioconductor", href = 'https://bioconductor.org/packages/release/bioc/html/affy.html'))
+h5("affy:", a("Bioconductor", href = 'https://bioconductor.org/packages/release/bioc/html/affy.html', target="_blank"))
 tags$hr()
-h5('Application author', a('Thomas W. Battaglia', href = 'https://github.com/twbattaglia'))
+h5('Application author', a('Thomas W. Battaglia', href = 'https://github.com/twbattaglia', target="_blank"))
 
 ```
 
@@ -360,7 +360,7 @@ Inputs {.sidebar data-width=268}
 h4("Help")
 p("This section is the heart of", tags$b('GEO-submitter '), "and should be filled completely and as detailed as possible. The information stored here is meant for researchers to understand the experimental design, as well as the platform and protocols used throughout the study.")
   
-p("The best way to write detailed protocols and experimental metadata, is to view studies similar to your own. Search", a("GEO DataSets", href = "http://www.ncbi.nlm.nih.gov/gds"), " for submitted and curated studies. It is also useful to query studies with the same platform identifer, so you can re-use the protocols for labeling, hybridization, etc..")
+p("The best way to write detailed protocols and experimental metadata, is to view studies similar to your own. Search", a("GEO DataSets", href = "http://www.ncbi.nlm.nih.gov/gds", target="_blank"), " for submitted and curated studies. It is also useful to query studies with the same platform identifer, so you can re-use the protocols for labeling, hybridization, etc..")
 
 p("When you have filled out the entries completly, save the information using the button below.")
 
@@ -375,23 +375,23 @@ observeEvent(input$saveExp, {
   showNotification("Saving data...", type = "message")
   
   # TODO validations
-  reactive$name <- isolate(input$name)
-  reactive$title <- isolate(input$title)
-  reactive$summary <- isolate(input$summary)
-  reactive$design <- isolate(input$design)
+  reactive$Name <- isolate(input$name)
+  reactive$Title <- isolate(input$title)
+  reactive$Summary <- isolate(input$summary)
+  reactive$Design <- isolate(input$design)
   
-  reactive$organism <- isolate(input$organism)
-  reactive$molecule <- isolate(input$molecule)
-  reactive$source_type <- isolate(input$source_type)
-  reactive$platform <- isolate(input$platform)
-  reactive$pubmed <- isolate(input$pubmed)
-  reactive$label <- isolate(input$label)
+  reactive$Organism <- isolate(input$organism)
+  reactive$Molecule <- isolate(input$molecule)
+  reactive$Source_type <- isolate(input$source_type)
+  reactive$Platform <- isolate(input$platform)
+  reactive$Pubmed <- isolate(input$pubmed)
+  reactive$Label <- isolate(input$label)
 
-  reactive$extraction <- isolate(input$extraction)
-  reactive$labeling <- isolate(input$labeling)
-  reactive$hybridization <- isolate(input$hybridization)
-  reactive$scanning <- isolate(input$scanning)
-  reactive$data_processing <- isolate(input$data_processing)
+  reactive$Extraction_protocol <- isolate(input$extraction)
+  reactive$Labeling_protocol <- isolate(input$labeling)
+  reactive$Hybridization_protocol <- isolate(input$hybridization)
+  reactive$Scanning_protocol <- isolate(input$scanning)
+  reactive$Data_protocol <- isolate(input$data_processing)
 
   # Add sampleN for easier looping
   if(is.null(data())){
@@ -449,7 +449,7 @@ textareaInput(inputId = "design",
 ```{r platform}
 h4("Organism")
 textInput(inputId = "organism", 
-          label = p("Identify the organism(s) from which the biological material was derived. See", a("NCBI Taxonomy", href="http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/"), " for a listing."),
+          label = p("Identify the organism(s) from which the biological material was derived. See", a("NCBI Taxonomy", href="http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/", target="_blank"), " for a listing."),
           value = "",
           width = "400px",
           placeholder = "Mus musculus")
@@ -476,7 +476,7 @@ tags$hr()
 
 h4("Platform")
 textInput(inputId = "platform", 
-          label = p("Enter the NCBI platform identifier used.", a("See", href = "http://www.ncbi.nlm.nih.gov/geo/browse/?view=platforms&tool=findplatform"), "to find the corresponding identifier."), 
+          label = p("Enter the NCBI platform identifier used.", a("See", href = "http://www.ncbi.nlm.nih.gov/geo/browse/?view=platforms&tool=findplatform", target="_blank"), "to find the corresponding identifier."), 
           value = "", 
           width = "400px",
           placeholder = "GPL19964")
@@ -695,9 +695,9 @@ Column {data-width=300}
 h4("Choose characteristics")
 selectizeInput(inputId = "sampleChar", 
                label = helpText("Select or enter the variables which best describe your samples."), 
-            choices = c("dose", "time", "tissue", "strain", "gender", "cell line", "development stage", "age", "agent", "cell type", "infection", "isolate", "metabolism", "shock", "stress", "temperature", "specimen", "disease state", "protocol", "growth protocol", "genotype/variation", "species", "individual"), 
-            options = list(create = TRUE, placeholder = 'Select variables...     '),
-            multiple = TRUE)
+               choices = c("dose", "time", "tissue", "strain", "gender", "cell line", "development stage", "age", "agent", "cell type", "infection", "isolate", "metabolism", "shock", "stress", "temperature", "specimen", "disease state", "protocol", "growth protocol", "genotype/variation", "species", "individual"), 
+               options = list(create = TRUE, placeholder = 'Select variables...     '),
+               multiple = TRUE)
 ```
 
 
@@ -761,21 +761,32 @@ Inputs {.sidebar data-width=267}
 -----------------------------------------------------------------------
 ```{r help export}
 h4("Help")
-p("Once you have filled out all the experimental and sample information, you can export your data as a SOFT file. Review the", tags$b("Experimental data"), "and", tags$b("Sample data"), "tables to be sure the information you have inputed is correct. Once the data is correct, select the export file option on the right hand-side.")
+p("Review the", tags$b("Experimental data"), "and", tags$b("Sample data"), "tables to be sure the information you have inputed is correct. Once the experimental and sample metadata are valid, export all information as a SOFT file. The SOFT file will be required for data submission on GEO's SOFT submission website.")
+
+tags$hr()
+
+h4("Export Data")
+downloadLink('downloadData', 'Export SOFT file')
 ```
 
    
-Column {.tabset .tabset-fade data-width=700}
+Column {.tabset .tabset-fade data-width=600}
 -------------------------------------
    
 ### Experimental data
 
 ```{r experiment review}
 output$expReview <- renderTable(hover = T, 
-                                rownames = F, {
-  
+                                rownames = F,
+                                bordered = T, {
+  # Err if null                                
+  if(is.null(reactive)){
+    return()
+  }
+                                  
   x <- reactiveValuesToList(reactive)
   x$authorDF <- NULL
+  #x$authorDF <- NULL
   df <- t(as.data.frame(x))
   data.frame(Variable = row.names(df), Values = df[,1])
 })
@@ -784,39 +795,57 @@ tableOutput('expReview')
  
 ### Sample data
 ```{r sample review}
-output$sampleReview <- renderTable(hover = T, {
+output$sampleReview <- renderTable(
+  hover = T, 
+  bordered = T,
+  rownames = F, {
   
-  # Err if null
-  if(is.null(data())){
-    return()
-  }
-  hot_to_r(input$hot)
-  }, 
-  include.rownames = F)
-
+    # Err if null
+    if(is.null(data())){
+      return()
+    }
+    df <- hot_to_r(input$hot)
+    na.omit(df)
+  })
 tableOutput('sampleReview')
 ```
 
 
-
-Column {data-width=300}
+Column {data-width=400}
 -------------------------------------
     
-### Export SOFT File
-Once the experimental and sample metadata are valid, export all information as a SOFT file. This SOFT file will be required for data submission on GEO's SOFT submission website.
+### Submitting to GEO
+```{r}
+p("After sucessfully generating a SOFT file, the next step is to prepare the raw data and SOFT file for GEO submission. Once complete, go to the", a("GEO-SOFT submission page", href = "http://www.ncbi.nlm.nih.gov/geo/submission/depslip.cgi", target="_blank"), " and choose the", tags$b("Submit"), " button to start a new submission.")
+
+h5("Step 1. Place raw files and SOFT file into a single folder.")
+img(src = "www/folder_setup.png", width = NULL)
+
+tags$hr()
+
+h5("Step 2. Compress folder.")
+img(src = "www/compress_folder.png", width = NULL)
+
+tags$hr()
+
+h5("Step 3. Submit compressed archive.")
+a("GEO-SOFT submission page", href = "http://www.ncbi.nlm.nih.gov/geo/submission/depslip.cgi", target="_blank")
+#img(src = "www/final_folder.png", width = NULL)
+```
+
+
 
 ```{r export}
-downloadLink('downloadData', 'Export SOFT file')
 output$downloadData <- downloadHandler(
   contentType = "text/txt",
   filename = "soft.txt",
   content = function(file) {
     
     # Write series information
-    write_append(paste0("^SERIES = ", isolate(reactive$name)), filename = file)
-    write_append(paste0("!Series_title = ", isolate(reactive$title)), filename = file)
-    write_append(paste0("!Series_summary = ", isolate(reactive$summary)), filename = file)
-    write_append(paste0("!Series_overall_design = ", isolate(reactive$design)), filename = file)
+    write_append(paste0("^SERIES = ", isolate(reactive$Name)), filename = file)
+    write_append(paste0("!Series_title = ", isolate(reactive$Title)), filename = file)
+    write_append(paste0("!Series_summary = ", isolate(reactive$Summary)), filename = file)
+    write_append(paste0("!Series_overall_design = ", isolate(reactive$Design)), filename = file)
 
     # Loop over each number of samples
     for(i in 1:isolate(reactive$sampleN)){
@@ -830,7 +859,7 @@ output$downloadData <- downloadHandler(
     
     # Write Optionals
     if(isolate(reactive$pubmed) != ""){
-      write_append(paste0("!Series_pubmed_id", " = ", isolate(reactive$pubmed)), filename = file)
+      write_append(paste0("!Series_pubmed_id", " = ", isolate(reactive$Pubmed)), filename = file)
     }
     
     # Sample information
@@ -856,31 +885,31 @@ output$downloadData <- downloadHandler(
       write_append(paste0("!Sample_Description", " = ", sampleInfo$Description[i]), filename = file)
       
       # Write !Sample_source_name
-      write_append(paste0("!Sample_source_name", " = ", isolate(reactive$source_type)), filename = file)
+      write_append(paste0("!Sample_source_name", " = ", isolate(reactive$Source_type)), filename = file)
       
       # Write !Sample_organism
-      write_append(paste0("!Sample_organism", " = ", isolate(reactive$organism)), filename = file)
+      write_append(paste0("!Sample_organism", " = ", isolate(reactive$Organism)), filename = file)
 
       # Write !Sample_label
-      write_append(paste0("!Sample_label", " = ", isolate(reactive$label)), filename = file)
+      write_append(paste0("!Sample_label", " = ", isolate(reactive$Label)), filename = file)
       
       # Write !Sample_molecule
-      write_append(paste0("!Sample_molecule", " = ", isolate(reactive$molecule)), filename = file)
+      write_append(paste0("!Sample_molecule", " = ", isolate(reactive$Molecule)), filename = file)
       
       # Write !Sample_extract_protocol
-      write_append(paste0("!Sample_extract_protocol", " = ", isolate(reactive$extraction)), filename = file)
+      write_append(paste0("!Sample_extract_protocol", " = ", isolate(reactive$Extraction_protocol)), filename = file)
       
       # Write !Sample_label_protocol
-      write_append(paste0("!Sample_label_protocol", " = ", isolate(reactive$labeling)), filename = file)
+      write_append(paste0("!Sample_label_protocol", " = ", isolate(reactive$Labeling_protocol)), filename = file)
       
       # Write !Sample_hyb_protocol
-      write_append(paste0("!Sample_hyb_protocol", " = ", isolate(reactive$hybridization)), filename = file)
+      write_append(paste0("!Sample_hyb_protocol", " = ", isolate(reactive$Hybridization_protocol)), filename = file)
       
       # Write !Sample_scan_protocol
-      write_append(paste0("!Sample_scan_protocol", " = ", isolate(reactive$scanning)), filename = file)
+      write_append(paste0("!Sample_scan_protocol", " = ", isolate(reactive$Scanning_protocol)), filename = file)
       
       # Write !Sample_data_processing
-      write_append(paste0("!Sample_data_processing", " = ", isolate(reactive$data_processing)), filename = file)
+      write_append(paste0("!Sample_data_processing", " = ", isolate(reactive$Data_protocol)), filename = file)
       
       # Subset the expression values
       normalized_sub <- subset(data()$normalized, select = i)

@@ -28,7 +28,7 @@ Column {data-width=700}
     
 ### Introduction {data-height=250}
     
-```{r}
+```{r introduction}
 p('Currently there does not exist an easy-to-use interface for submitting array data to Gene Expression Omnibus (GEO), through NCBI. This difficulty can lead to the inability to properly submit studes and adhere to the', a('Minimum information about a microarray experiment (MAIME).', href = "http://www.ncbi.nlm.nih.gov/geo/info/MIAME.html"), 'GEO-submiter is meant to remedy this issue by creating a web-based tool to help researchers submit their gene expression array studies to GEO by using the, ', a("Simple Omnibus Format in Text (SOFT).", href = 'http://www.ncbi.nlm.nih.gov/geo/info/soft.html'), 'The SOFT file format allows a researcher to include all experiemental protocols, information and gene expression data in one file. After filling in all required information found within this tool, a SOFT text file will be generated, which can be submitted along with the raw data to GEO as a single submission.' )
 
 tags$b("This is still a work-in-progress and a proof-of-concept, so do not use it for anything important!")
@@ -37,7 +37,7 @@ tags$b("This is still a work-in-progress and a proof-of-concept, so do not use i
 
 ### Normalization methods 
     
-```{r}
+```{r normalization methods}
 p('GEO submission require the SOFT file to include normalized expression values for each of the genes for every sample within an array. GEO-submitter makes it easier to generate the normalized values using a multitude of R-packages. After importing the raw data, you can select the many different techniques for normalizing your microarray or nanostring data. Below is a breakdown of the different normalization techniques currently supported by GEO-submitter.')
 
 h4("Microarray Normalization")
@@ -59,7 +59,7 @@ Column {data-width=300}
     
 ### Credits & citations
 
-```{r}
+```{r credits}
 p("Below are a list of the packages and databases which were used or influenced the creation GEO-submitter. See the source code for a more detailed listing of the packages used.")
 tags$hr()
 h5("Shiny:", a("Github, ", href = 'https://github.com/rstudio/shiny'), a("Website", href = 'http://shiny.rstudio.com/'))
@@ -358,7 +358,10 @@ Inputs {.sidebar data-width=268}
 
 ```{r save experiment}
 h4("Help")
-p("This section is the heart of", tags$b('GEO-submitter '), "and should be filled completely and as detailed as possible. The information stored here is meant for researchers to understand how the experiemental design as well as the platform and protocols used during sample extraction and treatment.")
+p("This section is the heart of", tags$b('GEO-submitter '), "and should be filled completely and as detailed as possible. The information stored here is meant for researchers to understand the experimental design, as well as the platform and protocols used throughout the study.")
+  
+p("The best way to write detailed protocols and experimental metadata, is to view studies similar to your own. Search", a("GEO DataSets", href = "http://www.ncbi.nlm.nih.gov/gds"), " for submitted and curated studies. It is also useful to query studies with the same platform identifer, so you can re-use the protocols for labeling, hybridization, etc..")
+
 p("When you have filled out the entries completly, save the information using the button below.")
 
 # Save experiemental information
@@ -436,7 +439,7 @@ tags$hr()
 
 h4("Design")
 textareaInput(inputId = "design", 
-          label = "Provide a description of the experimental design. Indicate how many Samples are analyzed, if replicates are included, are there control and/or reference Samples", 
+          label = "Provide a description of the experimental design. Indicate how many Samples are analyzed, if replicates are included, are there control and/or reference samples. etc..", 
           value = "", 
           placeholder = "Enter text...")
 ```
@@ -464,7 +467,7 @@ tags$hr()
 
 h4("Sample Source")
 textInput(inputId = "source_type", 
-          label = "Enter sample source type.", 
+          label = "Select the sample source type.", 
           value = "", 
           width = "400px",
           placeholder = "Terminal Ileum")
@@ -473,7 +476,7 @@ tags$hr()
 
 h4("Platform")
 textInput(inputId = "platform", 
-          label = "Enter the NCBI platform identifier used. See http://www.ncbi.nlm.nih.gov/geo/browse/?view=platforms&tool=findplatform to find the corresponding identifier.", 
+          label = p("Enter the NCBI platform identifier used.", a("See", href = "http://www.ncbi.nlm.nih.gov/geo/browse/?view=platforms&tool=findplatform"), "to find the corresponding identifier."), 
           value = "", 
           width = "400px",
           placeholder = "GPL19964")
@@ -512,28 +515,30 @@ h4("Labeling Protocol")
 textareaInput(inputId = "labeling", 
               label = "Describe the protocol used to label the extract. You can include as much text as you need to thoroughly describe the protocol.", 
               value = "", 
-              placeholder = "Enter text...")
+              placeholder = "Labeled according to the manufacturer's protocol. The probe pair consists of a Reporter Probe, which carries the signal on its 5' end, and a Capture Probe which carries a biotin on
+the 3' end. The color codes carry six positions and each position can be one of four colors, thus allowing for a large diversity of tags that can be mixed together in a single well for direct hybridization to target and yet still be individually resolved and identified during data collection. http://www.nanostring.com/media/pdf/MAN_nCounter_Gene_Expression_Assay.pdf")
 tags$hr()
 
 h4("Hybridization Protocol")
 textareaInput(inputId = "hybridization", 
               label = "Describe the protocols used for hybridization, blocking and washing, and any post-processing steps such as staining.", 
               value = "", 
-              placeholder = "Enter text...")
+              placeholder = "Hydridized according to the manufacturer's protocol. the hybridization mixture is allowed to bind to the magnetic beads by the Capture Probe. Wash steps are performed and excess Reporter Probes and non-target cellular transcripts are removed during wash steps. After washing, the Capture Probes and Target/Probe complexes are eluted off of the beads and are hybridized to magnetic beads complementary to the Reporter Probe. Wash steps
+are performed and excess Capture Probes are washed away. Finally, the purified Target/Probe complexes are eluted off and are immobilized in the cartridge for data collection. http://www.nanostring.com/media/pdf/MAN_nCounter_Gene_Expression_Assay.pdf")
 tags$hr()
 
 h4("Scanning Protocol")
 textareaInput(inputId = "scanning", 
               label = "Describe the scanning and image acquisition protocols, hardware, and software. You can include as much text as you need to thoroughly describe the protocol.", 
               value = "", 
-              placeholder = "Enter text...")
+              placeholder = "Scanned according to the manufacturer's protocol. Data Collection is carried out in the nCounter? Digital Analyzer. At the highest standard data resolution, 555_1155 fields of view (FOV) are collected per flow cell using a microscope objective and a CCD camera yielding data of hundreds of thousands of target molecule counts. Digital images are processed on the nCounter Digital Analyzer and the barcode counts are tabulated in a comma separated value (CSV) format. (http://www.nanostring.com/media/pdf/MAN_nCounter_Gene_Expression_Assay.pdf)")
 tags$hr()
 
 h4("Data Processing Protocol")
 textareaInput(inputId = "data_processing", 
               label = "Provide details of how data in the VALUE column of your table were generated and calculated, i.e., normalization method, data selection procedures and parameters, transformation algorithm (e.g., MAS5.0), and scaling parameters. You can include as much text as you need to thoroughly describe the processing procedures.", 
               value = "", 
-              placeholder = "Enter text...")
+              placeholder = "Probe set summarization and normalization was performed by Probe-level background correction using the R/Bioconductor package NanoStringNorm.")
 ```
 
 
@@ -556,17 +561,19 @@ fluidRow(
                      label = h5("Last Name"), 
                      value = "", 
                      placeholder = "Crick"),
-           actionButton(inputId = "addAuthor", label = "Add Author", icon = icon("fa-list")),
-           actionButton(inputId = "removeAuthor", label = "Remove Author", icon = icon("fa-list")))
+           actionButton(inputId = "addAuthor", label = "Add Author", icon = icon("fa-list"))
+           #actionButton(inputId = "editAuthor", label = "Edit Author List", icon = icon("fa-list"))
+           )
     )
 tags$hr()
 ```   
 
 
-```{r author table}
-reactive$authorDF <- data.frame(First = "",
-                                Middle = "",
-                                Last = "")
+```{r author reactive}
+# Set a reactive dataframe to show a table of authors
+reactive$authorDF <- data.frame(First = character(),
+                                Middle = character(),
+                                Last = character())
 
 # Observe if 'add author' button is pressed
 observeEvent(input$addAuthor, {
@@ -580,26 +587,83 @@ observeEvent(input$addAuthor, {
   req(input$firstName)
   req(input$lastName)
   
-  # Add values to data frame (for viewing table)
-  showNotification("Adding Author...", type = "message")
-  author_newLine <- isolate(c(input$firstName, input$middleInitial, input$lastName))
-  isolate(reactive$authorDF <- rbind(as.matrix(reactive$authorDF), unlist(author_newLine)))
-  
   # Concatenate names together (for internal use)
   new_author <- isolate(
-    paste(input$firstName, input$middleName, input$lastName, sep = ",") %>% 
+    paste(input$firstName, input$middleInitial, input$lastName, sep = ",") %>% 
       gsub(pattern = ",,", replacement = ",", x = ., fixed = T) %>%  # fix no middle initials
       gsub(pattern = ".", replacement = "", x = ., fixed = T) # fix dots in middle initials
   )
   
   # Add authors as a reactive list
   reactive$authorList <- c(isolate(reactive$authorList), new_author)
+  
+  # Add values to table
+  showNotification("Adding Author...", type = "message")
+  author_newLine <- isolate(c(input$firstName, input$middleInitial, input$lastName))
+  isolate(reactive$authorDF <- rbind(as.matrix(reactive$authorDF), unlist(author_newLine)))
 })
 
 # Render table of authors
 output$author_table <- renderTable({reactive$authorDF}, include.rownames = F)
 tableOutput("author_table")
 ```
+
+
+```{r author modal}
+observeEvent(input$editAuthor, {
+  showModal(modalDialog(
+    title = "Edit Authors",
+    h4("Select the authors you wish to remove. (TODO)"),
+    renderUI({
+      lapply(reactive$authorList, function(x){
+        id <- gsub(pattern = ",", replacement = "_", x = x, fixed = T)
+        checkboxInput(inputId = id, label = tags$b(x), value = FALSE)
+      })
+    }),
+    actionButton(inputId = "authorRemove", label = "Remove Authors", icon = icon("fa-trash")),
+    easyClose = TRUE,
+    footer = NULL
+  ))
+})
+
+# Remove any authors in the checklist
+observeEvent(input$authorRemove, {
+  
+  # Iterate over each input. checkbox label will be in input$AUTHOR
+  sapply(reactive$authorList, function(x){
+    
+    # Convert to same format as input checkbox labels so it can be found.
+    id <- gsub(pattern = ",", replacement = "_", x = x, fixed = T)
+    
+    # If checked boxes are (TRUE), then remove them from the list of authors.
+    if(input[[id]]){
+      
+      # Remove any entries from the author dataframe
+      # - split the entry into pieces to match to the dataframe and subset based on those pieces
+      split <- strsplit(x, ",", fixed = T)
+      
+      # Fix for if middle initial is missing
+      if(length(split[[1]]) == 2){
+        split[[1]][3] = split[[1]][2]
+        split[[1]][2] = ""
+      } 
+      
+      # Subset based on first, middle and last names that match
+      authorTable <- as.data.frame(reactive$authorDF)
+      authorTableSub <- subset(authorTable, First != as.character(split[[1]][1]) & Middle != as.character(split[[1]][3]) & Last != as.character(split[[1]][3]))
+      isolate(reactive$authorDF <- authorTableSub)
+
+
+      # Remove any entries from the reactive authors list
+      reactive$authorList <- isolate(reactive$authorList[!reactive$authorList %in% x])
+      #message(paste0("removed ", x, " from reactive list."))
+    }
+  })
+  
+})
+
+```
+
 
 
 Sample data
@@ -695,7 +759,7 @@ Review & Export
 
 Inputs {.sidebar data-width=267}
 -----------------------------------------------------------------------
-```{r}
+```{r help export}
 h4("Help")
 p("Once you have filled out all the experimental and sample information, you can export your data as a SOFT file. Review the", tags$b("Experimental data"), "and", tags$b("Sample data"), "tables to be sure the information you have inputed is correct. Once the data is correct, select the export file option on the right hand-side.")
 ```
@@ -706,27 +770,20 @@ Column {.tabset .tabset-fade data-width=700}
    
 ### Experimental data
 
-```{r}
-output$expReview <- renderTable(rownames = F, 
-                                hover = T, {
-  
-  # Err if null
-  if(is.null(data())){
-    return()
-  }
+```{r experiment review}
+output$expReview <- renderTable(hover = T, 
+                                rownames = F, {
   
   x <- reactiveValuesToList(reactive)
+  x$authorDF <- NULL
   df <- t(as.data.frame(x))
-  out <- data.frame(Variable = row.names(df), Values = df[,1])
-  out_filter <- subset(out, !(Variable %in% c("authorDF.First", "authorDF.Middle", "authorDF.Last")))
-  out_filter
+  data.frame(Variable = row.names(df), Values = df[,1])
 })
 tableOutput('expReview')
-
 ```   
  
 ### Sample data
-```{r}
+```{r sample review}
 output$sampleReview <- renderTable(hover = T, {
   
   # Err if null
@@ -748,7 +805,7 @@ Column {data-width=300}
 ### Export SOFT File
 Once the experimental and sample metadata are valid, export all information as a SOFT file. This SOFT file will be required for data submission on GEO's SOFT submission website.
 
-```{r}
+```{r export}
 downloadLink('downloadData', 'Export SOFT file')
 output$downloadData <- downloadHandler(
   contentType = "text/txt",
@@ -769,6 +826,11 @@ output$downloadData <- downloadHandler(
     # Loop over each of the authors
     for(i in isolate(reactive$authorList)){
       write_append(paste0("!Series_contributor = ", i), filename = file)
+    }
+    
+    # Write Optionals
+    if(isolate(reactive$pubmed) != ""){
+      write_append(paste0("!Series_pubmed_id", " = ", isolate(reactive$pubmed)), filename = file)
     }
     
     # Sample information
@@ -864,3 +926,6 @@ background: #a00;
 }
 
 </style>
+
+
+

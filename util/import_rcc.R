@@ -1,4 +1,5 @@
 # Function to import nanostring RCC files
+# Modified version from NanoStringNorm. (https://cran.r-project.org/web/packages/NanoStringNorm/index.html) THANK YOU!
 import_rcc2 <- function(rcc.files){
   
   # Files do not exist 

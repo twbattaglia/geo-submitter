@@ -10,7 +10,7 @@ library(affy)
 library(gcrma)
 
 # Larger Text Area Input
-textareaInput <- function(inputId, label, value = "", placeholder = "", rows = 4){
+textareaInput <- function(inputId, label, value = "", placeholder = "", rows = 5){
   tagList(
     div(label, style = "margin-top: 5px;"),
     tags$style(type = "text/css", "textarea {width:100%; margin-top: 5px;}"),

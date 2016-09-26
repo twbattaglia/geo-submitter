@@ -74,13 +74,15 @@ h5("highcharter:", a("Github", href = 'http://www.ncbi.nlm.nih.gov/pubmed/117269
 tags$hr()
 h5("rhandsontable:", a("Github", href = 'https://github.com/jrowen/rhandsontable', target="_blank"))
 tags$hr()
+h5("affy:", a("Bioconductor", href = 'https://bioconductor.org/packages/release/bioc/html/affy.html', target="_blank"))
+tags$hr()
+h5("dplyr:", a("Github", href = 'https://github.com/hadley/dplyr', target="_blank"), a("Website", href = 'https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html', target="_blank"))
+tags$hr()
 h5("GEO:", a("Website", href = 'http://www.ncbi.nlm.nih.gov/geo/', target="_blank"))
 tags$hr()
 h5("MAIME:", a("Paper", href = 'http://www.ncbi.nlm.nih.gov/pubmed/11726920', target="_blank"))
 tags$hr()
 h5("Bootstrap3:", a("Github", href = 'https://github.com/twbs/bootstrap', target="_blank"))
-tags$hr()
-h5("affy:", a("Bioconductor", href = 'https://bioconductor.org/packages/release/bioc/html/affy.html', target="_blank"))
 tags$hr()
 h5('Application author', a('Thomas W. Battaglia', href = 'https://github.com/twbattaglia', target="_blank"))
 
@@ -185,7 +187,6 @@ data <- reactive({
       
       # normalized data for boxplot
       norm_boxplot <- melt(normalized, id.vars = c("Name"), varnames = c("gene", "variable")) 
-      
     }
     
     # Show progress message
@@ -392,6 +393,10 @@ observeEvent(input$saveExp, {
   reactive$Hybridization_protocol <- isolate(input$hybridization)
   reactive$Scanning_protocol <- isolate(input$scanning)
   reactive$Data_protocol <- isolate(input$data_processing)
+  
+  reactive$Biomaterial_protocol <- isolate(input$biomaterial)
+  reactive$Treatment_protocol <- isolate(input$treatment)
+  reactive$Growth_protocol <- isolate(input$growth)
 
   # Add sampleN for easier looping
   if(is.null(data())){
@@ -412,91 +417,114 @@ Column {.tabset .tabset-fade}
     
 ```{r experimental}
 h4("Name")
+p("Provide an identifier for this entity. This identifier is used only as an internal reference within a given file. The identifier will not appear on final GEO records.")
 textInput(inputId = "name", 
-          label = "Provide an identifier for this entity. This identifier is used only as an internal reference within a given file. The identifier will not appear on final GEO records.", 
-          width = "400px",
+          label = NULL, 
+          width = "375px",
           value = "", 
-          placeholder = "Enter text...")
+          placeholder = "Bone_marrow_stromal_cells")
 
 tags$hr()
 
 h4("Title")
-textInput(inputId = "title", 
-          label = "Provide a unique title that describes the overall study. Max 255 characters.", 
+p("Provide a unique title that describes the overall study. Max 255 characters.")
+textAreaInput(inputId = "title", 
+          label = NULL, 
           value = "", 
-          width = "400px",
-          placeholder = "Enter text...")
+          rows = 2,
+          width = "750px",
+          placeholder = "Profiling of the functionally distinct human bone marrow stromal cell lines HS-5 and HS-27a.")
 
 tags$hr()
 
 h4("Summary")
-textareaInput(inputId = "summary", 
-          label = "Summarize the goals and objectives of this study. The abstract from the associated publication may be suitable. You can include as much text as you need to thoroughly describe the study.", 
-          value = "", 
-          placeholder = "Enter text...")
+p("Summarize the goals and objectives of this study. The abstract from the associated publication may be suitable. You can include as much text as you need to thoroughly describe the study.")
+textAreaInput(inputId = "summary", 
+              label = NULL, 
+              value = "", 
+              rows = 5, 
+              resize = 'vertical',
+              width = "750px",
+              placeholder = "Enter text...")
 
 tags$hr()
 
 h4("Design")
-textareaInput(inputId = "design", 
-          label = "Provide a description of the experimental design. Indicate how many Samples are analyzed, if replicates are included, are there control and/or reference samples. etc..", 
-          value = "", 
-          placeholder = "Enter text...")
+p("Provide a description of the experimental design. Indicate how many Samples are analyzed, if replicates are included, are there control and/or reference samples. etc..")
+textAreaInput(inputId = "design", 
+              label = NULL, 
+              value = "", 
+              rows = 3, 
+              resize = 'vertical',
+              width = "750px", 
+              placeholder = "Two-condition experiment, ES vs. TF-ES cells. Biological replicates: 4 control, 3 transfected, independently grown and harvested. One replicate per array.")
 ```
    
 ### Platform 
 
 ```{r platform}
 h4("Organism")
+p("Identify the organism(s) from which the biological material was derived. See", a("NCBI Taxonomy", href="http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/", target="_blank"), " for a listing.")
 textInput(inputId = "organism", 
-          label = p("Identify the organism(s) from which the biological material was derived. See", a("NCBI Taxonomy", href="http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/", target="_blank"), " for a listing."),
+          label = NULL,
           value = "",
-          width = "400px",
+          width = "375px",
           placeholder = "Mus musculus")
 
 tags$hr()
 
 h4("Molecule Type")
+p('Specify the type of molecule that was extracted from the biological material.')
 selectInput(inputId = 'molecule', 
-            label = 'Specify the type of molecule that was extracted from the biological material.', 
-            choices = c("total RNA", "polyA RNA", "cytoplasmic RNA", "nuclear RNA", "genomic DNA", "protein", "other"),
-            width = "400px",
+            label = NULL, 
+            choices = c("total RNA", 
+                        "polyA RNA", 
+                        "cytoplasmic RNA", 
+                        "nuclear RNA", 
+                        "genomic DNA", 
+                        "protein", 
+                        "other"),
+            width = "375px",
             selectize = TRUE)
 
 tags$hr()
 
 h4("Sample Source")
+p("Select the sample source type.")
 textInput(inputId = "source_type", 
-          label = "Select the sample source type.", 
+          label = NULL, 
           value = "", 
-          width = "400px",
+          width = "375px",
           placeholder = "Terminal Ileum")
 
 tags$hr()
 
 h4("Platform")
+p("Enter the NCBI platform identifier used.", a("See", href = "http://www.ncbi.nlm.nih.gov/geo/browse/?view=platforms&tool=findplatform", target="_blank"), "to find the corresponding identifier.")
 textInput(inputId = "platform", 
-          label = p("Enter the NCBI platform identifier used.", a("See", href = "http://www.ncbi.nlm.nih.gov/geo/browse/?view=platforms&tool=findplatform", target="_blank"), "to find the corresponding identifier."), 
+          label = NULL, 
           value = "", 
-          width = "400px",
+          width = "375px",
           placeholder = "GPL19964")
 
 tags$hr()
 
 h4("Label Type")
+p("Specify the compound used to label the extract e.g., biotin, Cy3, Cy5, 33P.")
 textInput(inputId = "label", 
-          label = "Specify the compound used to label the extract e.g., biotin, Cy3, Cy5, 33P.", 
+          label = NULL, 
           value = "", 
-          width = "400px",
+          width = "375px",
           placeholder = "biotin")
 
 tags$hr()
 
 h4("Pubmed ID (Optional)")
+p("Optionally, specify a valid PubMed identifier (PMID) that references a published article describing this study. Most commonly, this information is not available at the time of submission - it can be added later once the data are published.")
 textInput(inputId = "pubmed", 
-          label = "Optionally, specify a valid PubMed identifier (PMID) that references a published article describing this study. Most commonly, this information is not available at the time of submission - it can be added later once the data are published.", 
+          label = NULL, 
           value = "", 
-          width = "400px",
+          width = "375px",
           placeholder = "12345678")
 ```     
 
@@ -505,40 +533,97 @@ textInput(inputId = "pubmed",
 
 ```{r protocols}
 h4("Extraction Protocol")
-textareaInput(inputId = "extraction", 
-              label = "Describe the protocol used to isolate the extract material. You can include as much text as you need to thoroughly describe the protocol.", 
+p("Describe the protocol used to isolate the extract material. You can include as much text as you need to thoroughly describe the protocol.")
+textAreaInput(inputId = "extraction", 
+              label = NULL, 
               value = "", 
-              placeholder = "TRIzol (Invitrogen) followed by RNeasy column cleanup (Qiagen) using the manufacturers protocols.")
+              rows = 4, 
+              resize = 'vertical',
+              width = "750px",
+              placeholder = "TRIzol (Invitrogen) followed by RNeasy column cleanup (Qiagen) using the manufacturers’ protocols")
+
 tags$hr()
 
 h4("Labeling Protocol")
-textareaInput(inputId = "labeling", 
-              label = "Describe the protocol used to label the extract. You can include as much text as you need to thoroughly describe the protocol.", 
+p("Describe the protocol used to label the extract. You can include as much text as you need to thoroughly describe the protocol.")
+textAreaInput(inputId = "labeling", 
+              label = NULL, 
               value = "", 
-              placeholder = "Labeled according to the manufacturer's protocol. The probe pair consists of a Reporter Probe, which carries the signal on its 5' end, and a Capture Probe which carries a biotin on
-the 3' end. The color codes carry six positions and each position can be one of four colors, thus allowing for a large diversity of tags that can be mixed together in a single well for direct hybridization to target and yet still be individually resolved and identified during data collection. http://www.nanostring.com/media/pdf/MAN_nCounter_Gene_Expression_Assay.pdf")
+              rows = 4, 
+              resize = 'vertical',
+              width = "750px",
+              placeholder = "Affymetrix GeneChip® IVT Labeling Kit, according to manufactuer's protocol (GeneChip® Expression Analysis Technical Manual)")
+
 tags$hr()
 
 h4("Hybridization Protocol")
-textareaInput(inputId = "hybridization", 
-              label = "Describe the protocols used for hybridization, blocking and washing, and any post-processing steps such as staining.", 
+p("Describe the protocols used for hybridization, blocking and washing, and any post-processing steps such as staining.")
+textAreaInput(inputId = "hybridization", 
+              label = NULL,
               value = "", 
-              placeholder = "Hydridized according to the manufacturer's protocol. the hybridization mixture is allowed to bind to the magnetic beads by the Capture Probe. Wash steps are performed and excess Reporter Probes and non-target cellular transcripts are removed during wash steps. After washing, the Capture Probes and Target/Probe complexes are eluted off of the beads and are hybridized to magnetic beads complementary to the Reporter Probe. Wash steps
-are performed and excess Capture Probes are washed away. Finally, the purified Target/Probe complexes are eluted off and are immobilized in the cartridge for data collection. http://www.nanostring.com/media/pdf/MAN_nCounter_Gene_Expression_Assay.pdf")
+              rows = 4, 
+              resize = 'vertical',
+              width = "750px",
+              placeholder = "Affymetrix Eukaryotic Target Hybridization protocol (GeneChip® Expression Analysis Technical Manual)")
+
 tags$hr()
 
 h4("Scanning Protocol")
-textareaInput(inputId = "scanning", 
-              label = "Describe the scanning and image acquisition protocols, hardware, and software. You can include as much text as you need to thoroughly describe the protocol.", 
+p("Describe the scanning and image acquisition protocols, hardware, and software. You can include as much text as you need to thoroughly describe the protocol.")
+textAreaInput(inputId = "scanning", 
+              label = NULL, 
               value = "", 
-              placeholder = "Scanned according to the manufacturer's protocol. Data Collection is carried out in the nCounter? Digital Analyzer. At the highest standard data resolution, 555_1155 fields of view (FOV) are collected per flow cell using a microscope objective and a CCD camera yielding data of hundreds of thousands of target molecule counts. Digital images are processed on the nCounter Digital Analyzer and the barcode counts are tabulated in a comma separated value (CSV) format. (http://www.nanostring.com/media/pdf/MAN_nCounter_Gene_Expression_Assay.pdf)")
+              rows = 4, 
+              resize = 'vertical',
+              width = "750px",
+              placeholder = "Affymetrix® GeneChip® Scanner 3000 with GCOS software according to manufactuer's protocol (GeneChip® Expression Analysis Technical Manual)")
+
 tags$hr()
 
 h4("Data Processing Protocol")
-textareaInput(inputId = "data_processing", 
-              label = "Provide details of how data in the VALUE column of your table were generated and calculated, i.e., normalization method, data selection procedures and parameters, transformation algorithm (e.g., MAS5.0), and scaling parameters. You can include as much text as you need to thoroughly describe the processing procedures.", 
+p("Provide details of how data in the VALUE column of your table were generated and calculated, i.e., normalization method, data selection procedures and parameters, transformation algorithm (e.g., MAS5.0), and scaling parameters. You can include as much text as you need to thoroughly describe the processing procedures.")
+textAreaInput(inputId = "data_processing", 
+              label = NULL, 
               value = "", 
-              placeholder = "Probe set summarization and normalization was performed by Probe-level background correction using the R/Bioconductor package NanoStringNorm.")
+              rows = 4, 
+              resize = 'vertical',
+              width = "750px",
+              placeholder = "Probe set summarization and normalization was performed by robust multi-array averaging (RMA, including background subtraction, summarization by median polish and quantile normalization) using the R/Bioconductor package affy.")
+
+tags$hr()
+
+h4("Biomaterial Provider (Optional)")
+p("Specify the name of the company, laboratory or person that provided the biological material.")
+textAreaInput(inputId = "biomaterial", 
+              label = NULL, 
+              value = "", 
+              rows = 4, 
+              resize = 'vertical',
+              width = "750px", 
+              placeholder = "Optional")
+tags$hr()
+
+h4("Growth Protocol (Optional)")
+p("Describe the conditions that were used to grow or maintain organisms or cells prior to extract preparation. You can include as much text as you need to thoroughly describe the protocol.")
+textAreaInput(inputId = "growth", 
+              label = NULL, 
+              value = "", 
+              rows = 4, 
+              resize = 'vertical',
+              width = "750px", 
+              placeholder = "Optional")
+tags$hr()
+
+h4("Treatment Protocol (Optional)")
+p("Describe any treatments applied to the biological material prior to extract preparation. You can include as much text as you need to thoroughly describe the protocol.")
+textAreaInput(inputId = "treatment", 
+              label = NULL, 
+              value = "", 
+              rows = 4, 
+              resize = 'vertical',
+              width = "750px", 
+              placeholder = "Optional")
+tags$hr()
 ```
 
 
@@ -761,12 +846,13 @@ Inputs {.sidebar data-width=267}
 -----------------------------------------------------------------------
 ```{r help export}
 h4("Help")
-p("Review the", tags$b("Experimental data"), "and", tags$b("Sample data"), "tables to be sure the information you have inputed is correct. Once the experimental and sample metadata are valid, export all information as a SOFT file. The SOFT file will be required for data submission on GEO's SOFT submission website.")
+p("Review the", tags$b("Experimental data"), "and", tags$b("Sample data"), "tables to be sure the information you have inputed is correct. Once the experimental and sample metadata are valid,", tags$b("export"), "the data as a SOFT file below.")
 
 tags$hr()
 
 h4("Export Data")
 downloadLink('downloadData', 'Export SOFT file')
+
 ```
 
    
@@ -786,7 +872,7 @@ output$expReview <- renderTable(hover = T,
                                   
   x <- reactiveValuesToList(reactive)
   x$authorDF <- NULL
-  #x$authorDF <- NULL
+  x$authorList <- NULL
   df <- t(as.data.frame(x))
   data.frame(Variable = row.names(df), Values = df[,1])
 })
@@ -814,23 +900,29 @@ tableOutput('sampleReview')
 Column {data-width=400}
 -------------------------------------
     
-### Submitting to GEO
+### Prepare and submit all data to GEO 
 ```{r}
 p("After sucessfully generating a SOFT file, the next step is to prepare the raw data and SOFT file for GEO submission. Once complete, go to the", a("GEO-SOFT submission page", href = "http://www.ncbi.nlm.nih.gov/geo/submission/depslip.cgi", target="_blank"), " and choose the", tags$b("Submit"), " button to start a new submission.")
 
-h5("Step 1. Place raw files and SOFT file into a single folder.")
+h5("Step 1. Place raw files and SOFT file into a single folder")
 img(src = "www/folder_setup.png", width = NULL)
 
 tags$hr()
 
-h5("Step 2. Compress folder.")
+h5("Step 2. Compress folder with raw data")
 img(src = "www/compress_folder.png", width = NULL)
 
 tags$hr()
 
-h5("Step 3. Submit compressed archive.")
-a("GEO-SOFT submission page", href = "http://www.ncbi.nlm.nih.gov/geo/submission/depslip.cgi", target="_blank")
-#img(src = "www/final_folder.png", width = NULL)
+h5("Step 3. Final folder")
+img(src = "www/final_folder.png", width = NULL)
+
+tags$hr()
+
+h5("Step 4. Submit data")
+p("Go to", a("GEO-SOFT submission page", href = "http://www.ncbi.nlm.nih.gov/geo/submission/depslip.cgi", target="_blank"))
+img(src = "www/placeholder.png", width = NULL)
+
 ```
 
 
@@ -858,14 +950,16 @@ output$downloadData <- downloadHandler(
     }
     
     # Write Optionals
-    if(isolate(reactive$pubmed) != ""){
+    if(isolate(reactive$Pubmed) != ""){
       write_append(paste0("!Series_pubmed_id", " = ", isolate(reactive$Pubmed)), filename = file)
     }
     
     # Sample information
     sampleInfo <- hot_to_r(input$hot)
-    #sampleInfo <- sampleInfo[!is.null(sampleInfo$SampleID), ] # Temporary fix to remove NA rows (Issue #2)
+    
+    # Iterate over each sample
     for (i in 1:nrow(sampleInfo)){
+      
       # Write ^SAMPLE
       write_append(paste0("^SAMPLE", " = ", sampleInfo$ID[i]), filename = file)
       
@@ -911,6 +1005,21 @@ output$downloadData <- downloadHandler(
       # Write !Sample_data_processing
       write_append(paste0("!Sample_data_processing", " = ", isolate(reactive$Data_protocol)), filename = file)
       
+      # Write optionals
+      if(isolate(reactive$Biomaterial_protocol) != ""){
+        write_append(paste0("!Sample_biomaterial_provider_ch1", " = ", isolate(reactive$Biomaterial_protocol)), filename = file)
+      }
+      
+      # Write optionals
+      if(isolate(reactive$Treatment_protocol) != ""){
+        write_append(paste0("!Sample_treatment_protocol_ch1", " = ", isolate(reactive$Treatment_protocol)), filename = file)
+      }
+      
+      # Write optionals
+      if(isolate(reactive$Growth_protocol) != ""){
+        write_append(paste0("!Sample_growth_protocol_ch1", " = ", isolate(reactive$Growth_protocol)), filename = file)
+      }
+        
       # Subset the expression values
       normalized_sub <- subset(data()$normalized, select = i)
       

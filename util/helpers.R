@@ -17,3 +17,7 @@ library(gcrma)
 write_append <- function(..., filename) {
   write(x = ..., file = filename, append = TRUE)
 }
+
+
+# Load NCBI Taxa names
+#load("util/ncbi_taxa_names.RDS")

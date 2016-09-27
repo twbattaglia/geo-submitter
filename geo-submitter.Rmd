@@ -365,6 +365,8 @@ p("The best way to write detailed protocols and experimental metadata, is to vie
 
 p("When you have filled out the entries completly, save the information using the button below.")
 
+tags$hr()
+
 # Save experiemental information
 actionButton(inputId = "saveExp", icon = icon("floppy-o"), label = "Save", width = "215px")
 
@@ -431,7 +433,7 @@ p("Provide a unique title that describes the overall study. Max 255 characters."
 textAreaInput(inputId = "title", 
           label = NULL, 
           value = "", 
-          rows = 2,
+          rows = 1,
           width = "750px",
           placeholder = "Profiling of the functionally distinct human bone marrow stromal cell lines HS-5 and HS-27a.")
 
@@ -464,7 +466,7 @@ textAreaInput(inputId = "design",
 
 ```{r platform}
 h4("Organism")
-p("Identify the organism(s) from which the biological material was derived. See", a("NCBI Taxonomy", href="http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/", target="_blank"), " for a listing.")
+p("Identify the organism(s) from which the biological material was derived. See", a("NCBI Taxonomy", href="http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/", target="_blank"), " for a listing of valid identifiers..")
 textInput(inputId = "organism", 
           label = NULL,
           value = "",
@@ -951,10 +953,8 @@ output$downloadData <- downloadHandler(
       write_append(paste0("!Series_pubmed_id", " = ", isolate(reactive$Pubmed)), filename = file)
     }
     
-    # Sample information
-    sampleInfo <- hot_to_r(input$hot)
-    
     # Iterate over each sample
+    sampleInfo <- hot_to_r(input$hot)
     for (i in 1:nrow(sampleInfo)){
       
       # Write ^SAMPLE
@@ -966,20 +966,27 @@ output$downloadData <- downloadHandler(
       # Write !Sample_supplementary_file
       write_append(paste0("!Sample_supplementary_file", " = ", input$upload$name[i]), filename = file)
       
-      # Write !Sample_supplementary_file
-      sub <- sampleInfo[i, c(-1:-3)]
-      sapply(colnames(sub), function(x) {
-         write_append(paste0("!Sample_characteristics_ch1", " = ", x, " : ", sub[ ,x]), filename = file)
+      # Write !Sample_characteristics_ch1
+      sapply(colnames(sampleInfo), function(x) {
+        
+        # Dont write the default columns
+        if( !(x %in% c("Sample", "ID", "Description")) ){
+           write_append(paste0("!Sample_characteristics_ch1", " = ", x, " : ", sampleInfo[i,x]), filename = file)
+        }
+        
       })
       
       # Write !Sample_Description
-      write_append(paste0("!Sample_Description", " = ", sampleInfo$Description[i]), filename = file)
+      write_append(paste0("!Sample_description", " = ", sampleInfo$Description[i]), filename = file)
       
       # Write !Sample_source_name
       write_append(paste0("!Sample_source_name", " = ", isolate(reactive$Source_type)), filename = file)
       
       # Write !Sample_organism
       write_append(paste0("!Sample_organism", " = ", isolate(reactive$Organism)), filename = file)
+      
+      # Write !Sample_platform_id
+      write_append(paste0("!Sample_platform_id", " = ", isolate(reactive$Platform)), filename = file)
 
       # Write !Sample_label
       write_append(paste0("!Sample_label", " = ", isolate(reactive$Label)), filename = file)

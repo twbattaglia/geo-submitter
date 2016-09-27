@@ -1,5 +1,5 @@
 # geo-submitter
-A webapp for preparing expression data for GEO
+A webapp for preparing expression data for a GEO submission
 
 #### Still in early stages. Do not use for anything important.
 
@@ -7,7 +7,8 @@ A webapp for preparing expression data for GEO
 https://tommyb18.shinyapps.io/geo-submitter/
 
 ### To Do
-- [ ] Validations of inputs
-- [ ] add more normalization methods/customization
-- [ ] add intro.js module
-- [ ] add instructions (.gif?) for submission
+- [ ] add interactive turotial with intro.js 
+- [ ] add author editing function
+- [ ] add more normalization methods to nanostring
+- [ ] add examples for protocols
+- [ ] set output as an archive of raw data and soft file

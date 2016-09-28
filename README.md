@@ -12,3 +12,4 @@ https://tommyb18.shinyapps.io/geo-submitter/
 - [ ] add more normalization methods to nanostring
 - [ ] add examples for protocols
 - [ ] set output as an archive of raw data and soft file
+- [ ] add validation functions when save button is pressed

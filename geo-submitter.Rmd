@@ -76,7 +76,7 @@ h5("rhandsontable:", a("Github", href = 'https://github.com/jrowen/rhandsontable
 tags$hr()
 h5("affy:", a("Bioconductor", href = 'https://bioconductor.org/packages/release/bioc/html/affy.html', target="_blank"))
 tags$hr()
-h5("dplyr:", a("Github", href = 'https://github.com/hadley/dplyr', target="_blank"), a("Website", href = 'https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html', target="_blank"))
+h5("dplyr:", a("Github, ", href = 'https://github.com/hadley/dplyr', target="_blank"), a("Website", href = 'https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html', target="_blank"))
 tags$hr()
 h5("GEO:", a("Website", href = 'http://www.ncbi.nlm.nih.gov/geo/', target="_blank"))
 tags$hr()
@@ -378,6 +378,11 @@ observeEvent(input$saveExp, {
   showNotification("Saving data...", type = "message")
   
   # TODO validations
+  if(nchar(isolate(input$title)) >= 255){
+    showNotification(ui = paste0("Title is too long. Currently: ", nchar(isolate(input$title)), " characters."),
+                     type = "error")
+  }
+  
   reactive$Name <- isolate(input$name)
   reactive$Title <- isolate(input$title)
   reactive$Summary <- isolate(input$summary)
@@ -429,11 +434,12 @@ textInput(inputId = "name",
 tags$hr()
 
 h4("Title")
-p("Provide a unique title that describes the overall study. Max 255 characters.")
+p("Provide a unique title that describes the overall study. Maximum of 255 characters.")
 textAreaInput(inputId = "title", 
           label = NULL, 
           value = "", 
           rows = 1,
+          resize = "vertical",
           width = "750px",
           placeholder = "Profiling of the functionally distinct human bone marrow stromal cell lines HS-5 and HS-27a.")
 
@@ -444,7 +450,7 @@ p("Summarize the goals and objectives of this study. The abstract from the assoc
 textAreaInput(inputId = "summary", 
               label = NULL, 
               value = "", 
-              rows = 5, 
+              rows = 6, 
               resize = 'vertical',
               width = "750px",
               placeholder = "Enter text...")
@@ -466,7 +472,7 @@ textAreaInput(inputId = "design",
 
 ```{r platform}
 h4("Organism")
-p("Identify the organism(s) from which the biological material was derived. See", a("NCBI Taxonomy", href="http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/", target="_blank"), " for a listing of valid identifiers..")
+p("Identify the organism(s) from which the biological material was derived. See", a("NCBI Taxonomy", href="http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/", target="_blank"), " for a listing of valid identifiers.")
 textInput(inputId = "organism", 
           label = NULL,
           value = "",

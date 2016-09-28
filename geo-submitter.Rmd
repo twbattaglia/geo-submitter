@@ -184,6 +184,9 @@ data <- reactive({
     # sample ID's
     sampleID <- colnames(data$header)
     
+    # panel type
+    panelType <- unique(data$header["GeneRLF",])[[1]]
+    
     # un-normalized data for boxplot
     unnorm_boxplot <- subset(data$x, select = c(-1,-3)) %>% 
          reshape2::melt(id.vars = c("Name"), varnames = c("gene", "variable")) 
@@ -214,6 +217,7 @@ data <- reactive({
         sampleN = sampleN,
         sampleID = sampleID,
         geneN = geneN,
+        panelType = panelType,
         normalized = normalized,
         unnorm_boxplot = unnorm_boxplot,
         norm_boxplot = norm_boxplot)
@@ -237,16 +241,24 @@ data <- reactive({
 
     # SampleID
     sampleID <- row.names(pData(ab))
+    
+    # panel type
+    panelType <- ab@annotation
+    
+    # set cluster
+    #cl <- makeCluster(2, type='SOCK')
 
     # Normalize based on 
     if (input$normalizationMA == "RMA"){
-      showNotification("Normalizing Data. Please wait...", type = "warning", duration = 20)
+      showNotification("Normalizing Data. Please wait...", type = "warning", duration = sampleN*2.7)
+      #normalized <- bgCorrectPara(ab, method = "rma", verbose = TRUE)
       normalized <- rma(ab)
       geneN <- nrow(normalized@featureData@data)
       norm_boxplot <- melt(exprs(normalized), id.vars = c("Name"), varnames = c("gene", "variable")) 
 
     } else if (input$normalizationMA == "MAS5"){
-      showNotification("Normalizing Data. Please wait...", type = "warning", duration = 15)
+      showNotification("Normalizing Data. Please wait...", type = "warning", duration = 20)
+      #normalized <- bgCorrectPara(ab, method = "mas", verbose = TRUE)
       normalized <- mas5(ab)
       geneN <- nrow(normalized@featureData@data)
       norm_boxplot <- melt(exprs(normalized), id.vars = c("Name"), varnames = c("gene", "variable")) 
@@ -271,6 +283,7 @@ data <- reactive({
         sampleN = sampleN,
         sampleID = sampleID,
         geneN = geneN,
+        panelType = panelType,
         normalized = exprs(normalized),
         unnorm_boxplot = unnorm_boxplot,
         norm_boxplot = norm_boxplot)
@@ -291,7 +304,7 @@ Row
 output$geneNumber <- renderValueBox({
   
   # Err if NULL
-  if(is.null(data())){
+  if(is.null(data()$geneN)){
     return(valueBox(0, caption = "Number of genes", icon = "fa-cubes"))
   }
   valueBox(data()$geneN, caption = "Number of genes", icon = "fa-cubes")
@@ -312,6 +325,22 @@ output$sampleNumber <- renderValueBox({
   valueBox(data()$sampleN, caption = "Number of samples", icon = "fa-users")
 })
 valueBoxOutput(outputId = "sampleNumber")
+```
+
+
+### Number of samples
+
+```{r valuebox panelType}
+output$panelType <- renderValueBox({
+  
+  # Err if NULL
+  if(is.null(data()$panelType)){
+    return(valueBox("NA", caption = "Panel Identifier", icon = "fa-th"))
+  }
+  
+  valueBox(h3(data()$panelType), caption = "Panel Identifier", icon = "fa-th")
+})
+valueBoxOutput(outputId = "panelType")
 ```
 
 
@@ -527,11 +556,15 @@ tags$hr()
 
 h4("Platform")
 p("Enter the NCBI platform identifier used. Search ", a("NCBI's GEO platform tool", href = "http://www.ncbi.nlm.nih.gov/geo/browse/?view=platforms&tool=findplatform", target="_blank"), " to find the corresponding identifier.")
-textInput(inputId = "platform", 
-          label = NULL, 
-          value = "", 
-          width = "375px",
-          placeholder = "GPL19964")
+selectizeInput(inputId = 'platform', 
+               label = NULL,
+               choices = ncbi_glp,
+               width = "375px",
+               options = list(
+                 placeholder = 'Select an NCBI platform...',
+                 onInitialize = I('function() { this.setValue(""); }')
+                )
+              )
 
 tags$hr()
 
@@ -892,12 +925,25 @@ output$expReview <- renderTable(hover = T,
   validate(
     need(expr = input$saveExp > 0, message = "Please add experimental characteristics...")
   )
-  
+                                  
+  # Convert reactive values to a list
   x <- reactiveValuesToList(reactive)
+  
+  # Remove author values from list
   x$authorDF <- NULL
   x$authorList <- NULL
-  df <- t(as.data.frame(x))
-  data.frame(Variable = row.names(df), Values = df[,1])
+  
+  # Transpose data
+  tdf <- t(as.data.frame(x))
+  
+  # Create a new dataframe from of the variables
+  df <- data.frame(Variable = row.names(df), Values = df[,1])
+  
+  # Remove _ so its more aestheically pleasing
+  df$Variable <- gsub(pattern = "_", " ", x = df$Variable, fixed = T)
+  
+  # Output final df
+  df
 })
 tableOutput('expReview')
 ```   

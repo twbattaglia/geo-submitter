@@ -12,11 +12,13 @@ library(reshape2)
 library(rhandsontable)
 library(affy)
 library(gcrma)
+library(affyPara)
 
 # For writing data to file
 write_append <- function(..., filename) {
   write(x = ..., file = filename, append = TRUE)
 }
 
-# Load NCBI Taxa names
-#load("util/ncbi_taxa_names.RDS")
+# Load NCBI GLP identifiers + sort
+ncbi_glp <- readRDS("util/ncbi_glp.RDS")
+ncbi_glp <- sort(ncbi_glp)

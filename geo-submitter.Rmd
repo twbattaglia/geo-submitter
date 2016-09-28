@@ -5,7 +5,7 @@ output:
   flexdashboard::flex_dashboard:
     orientation: columns
     vertical_layout: fill
-    source_code: embed
+    source_code: https://github.com/twbattaglia/geo-submitter
     theme: bootstrap
 ---
 
@@ -152,13 +152,29 @@ data <- reactive({
     return(NULL)
   }
   
+  # Set progress bar
+  #progress <- shiny::Progress$new(style = "notification")
+  #progress$set(message = "Importing data", value = 0)
+  #on.exit(progress$close())
+  
+  # Create a closure to update progress.
+  #updateProgress <- function(value = NULL, detail = NULL) {
+  #  if (is.null(value)) {
+  #    value <- progress$getValue()
+  #    value <- value + (progress$getMax() - value) / 5
+  #  }
+  #  progress$set(value = value, detail = detail)
+  #}
+  
   # Conditionals for data source type
   if(input$dataType == "Nanostring"){
-    showNotification("Processing Nanostring...", type = "message")
-
-    # Import RCC files and convert to table/metadata
-    data <- import_rcc2(input$upload$datapath)
     
+    # Show message
+    showNotification("Importing data...", type = "message")
+      
+    # Import RCC files and convert to table/metadata
+    data <- import_rcc2(input$upload$datapath, time = 0)
+
     # number of genes
     geneN <- nrow(data$x)
   
@@ -203,11 +219,13 @@ data <- reactive({
         norm_boxplot = norm_boxplot)
     )
     
-  }else if(input$dataType == "Microarray"){
-    showNotification("Processing Microarray..", type = "message")
+  } else if(input$dataType == "Microarray"){
+    
+    # Show progress message
+    showNotification("Importing data...", type = "message")
     
     # Load data with affy package
-    ab <- ReadAffy(filenames = input$upload$datapath, compress = T, sampleNames = input$upload$name)
+    ab <- ReadAffy(filenames = input$upload$datapath, compress = T, sampleNames = input$upload$name, verbose = T)
     
     # Un normalized data for boxplot. Temporary speed fix. sample 10,000 from each sample
     unnorm_boxplot <- melt(pm(ab), varnames = c("gene", "variable")) %>%
@@ -311,7 +329,7 @@ output$unnormalized <- renderHighchart({
   }
   
   # Convert to long format for high charts
-  showNotification("Plotting raw values...", type = "message")
+  #showNotification("Plotting raw values...", type = "message")
   
   # Plot boxplot over gene abundance values
   highchart() %>% 
@@ -336,7 +354,7 @@ output$normalized <- renderHighchart({
   }
   
   # Convert to long format for high charts
-  showNotification("Plotting normalized values...", type = "message")
+  #showNotification("Plotting normalized values...", type = "message")
   
   # Plot boxplot over gene abundance values
   highchart() %>% 
@@ -702,6 +720,7 @@ tableOutput("author_table")
 
 
 ```{r author modal}
+# Modal for editing author
 observeEvent(input$editAuthor, {
   showModal(modalDialog(
     title = "Edit Authors",
@@ -751,7 +770,6 @@ observeEvent(input$authorRemove, {
   })
   
 })
-
 ```
 
 

@@ -1,6 +1,6 @@
 # Function to import nanostring RCC files
 # Modified version from NanoStringNorm. (https://cran.r-project.org/web/packages/NanoStringNorm/index.html) THANK YOU!
-import_rcc2 <- function(rcc.files){
+import_rcc2 <- function(rcc.files, updateProgress = NULL, time = 1){
   
   # Files do not exist 
   if (length(rcc.files) == 0) {
@@ -10,6 +10,7 @@ import_rcc2 <- function(rcc.files){
   rcc.header.merged <- NULL
   rcc.data.merged <- NULL
   count = 1
+  
   for (rcc.file in rcc.files) {
     rcc.header <- read.table(rcc.file, nrows = 15, comment.char = "<", sep = ",", as.is = TRUE)
     rcc.data <- read.table(rcc.file, skip = 25, header = TRUE, comment.char = "<", sep = ",", as.is = TRUE, nrows = -1)
@@ -18,6 +19,16 @@ import_rcc2 <- function(rcc.files){
     colnames(rcc.header)[2] <- sample.name
     colnames(rcc.data)[4] <- sample.name
     
+    # Wait so you can see the pretty progress bar!
+    Sys.sleep(time = time)
+    
+    # Update progress bar
+    if (is.function(updateProgress)) {
+      text <- paste0("Working on ", count, "/", length(rcc.files))
+      updateProgress(detail = text)
+    }
+    
+    # If first item in list
     if (count == 1) {
       rcc.header.merged <- rcc.header
       rcc.data.merged <- rcc.data

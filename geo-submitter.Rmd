@@ -867,7 +867,7 @@ output$expReview <- renderTable(hover = T,
                                 bordered = T, {
   # Err if null
   validate(
-    need(expr = input$saveExp > 0, message = "Please add sample characteristics...")
+    need(expr = input$saveExp > 0, message = "Please add experimental characteristics...")
   )
   
   x <- reactiveValuesToList(reactive)

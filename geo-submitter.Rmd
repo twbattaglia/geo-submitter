@@ -508,7 +508,7 @@ textInput(inputId = "source_type",
 tags$hr()
 
 h4("Platform")
-p("Enter the NCBI platform identifier used.", a("See", href = "http://www.ncbi.nlm.nih.gov/geo/browse/?view=platforms&tool=findplatform", target="_blank"), "to find the corresponding identifier.")
+p("Enter the NCBI platform identifier used. Search ", a("NCBI's GEO platform tool", href = "http://www.ncbi.nlm.nih.gov/geo/browse/?view=platforms&tool=findplatform", target="_blank"), " to find the corresponding identifier.")
 textInput(inputId = "platform", 
           label = NULL, 
           value = "", 
@@ -683,8 +683,7 @@ observeEvent(input$addAuthor, {
   # Concatenate names together (for internal use)
   new_author <- isolate(
     paste(input$firstName, input$middleInitial, input$lastName, sep = ",") %>% 
-      gsub(pattern = ",,", replacement = ",", x = ., fixed = T) %>%  # fix no middle initials
-      gsub(pattern = ".", replacement = "", x = ., fixed = T) # fix dots in middle initials
+      gsub(pattern = ",,", replacement = ",", x = ., fixed = T) # fix no middle initials
   )
   
   # Add authors as a reactive list

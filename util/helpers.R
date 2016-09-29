@@ -12,7 +12,8 @@ library(reshape2)
 library(rhandsontable)
 library(affy)
 library(gcrma)
-library(affyPara)
+#library(affyPara)
+#library(oligo)
 
 # For writing data to file
 write_append <- function(..., filename) {

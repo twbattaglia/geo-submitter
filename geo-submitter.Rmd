@@ -60,7 +60,7 @@ Column {data-width=300}
 ### Credits & citations
 
 ```{r credits}
-p("Below are a list of the packages and databases which were used or influenced the creation GEO-submitter. See the source code for a more detailed listing of the packages used.")
+p("Below are a list of the packages and databases which were used or influenced the creation of GEO-submitter. See the source code for a more detailed listing of the packages used.")
 tags$hr()
 h5("Shiny:", a("Github, ", href = 'https://github.com/rstudio/shiny', target="_blank"), a("Website", href = 'http://shiny.rstudio.com/', target="_blank"))
 tags$hr()

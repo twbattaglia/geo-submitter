@@ -837,7 +837,7 @@ h4("Choose characteristics")
 selectizeInput(inputId = "sampleChar", 
                label = helpText("Select or enter the variables which best describe your samples."), 
                choices = c("dose", "time", "tissue", "strain", "gender", "cell line", "development stage", "age", "agent", "cell type", "infection", "isolate", "metabolism", "shock", "stress", "temperature", "specimen", "disease state", "protocol", "growth protocol", "genotype/variation", "species", "individual"), 
-               options = list(create = TRUE, placeholder = 'Select variables...     '),
+               options = list(create = TRUE, placeholder = 'Select or enter variables...     '),
                multiple = TRUE)
 ```
 
